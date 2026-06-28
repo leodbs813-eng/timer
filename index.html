@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deep Sea & Firefly Seamless Timer</title>
+    <title>Deep Sea & Firefly Minimalist Timer</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -12,7 +11,7 @@
         
         body {
             font-family: 'Noto Sans KR', sans-serif;
-            background-color: #010103;
+            background-color: #030307;
             transition: background-color 2.5s cubic-bezier(0.25, 1, 0.5, 1);
         }
         
@@ -21,7 +20,15 @@
             font-weight: 100;
         }
 
-        /* 호버 시 부드러운 스케일 업 인터랙션만 남겨둔 상태 */
+        /* 공간 음영용 실시간 글로우 백라이트 */
+        .aquarium-backlight {
+            filter: blur(150px);
+            opacity: 0.12;
+            transition: background 2.5s ease-in-out;
+            pointer-events: none;
+        }
+
+        /* 라이팅/모드 칩 인터랙티브 */
         .color-dot, .mode-tab {
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
@@ -30,79 +37,77 @@
         }
     </style>
 </head>
-<body class="text-slate-400 min-h-screen flex flex-col items-center justify-center p-4 select-none overflow-hidden relative">
+<body class="text-slate-400 min-h-screen select-none overflow-hidden relative flex items-center justify-center p-4">
 
-    <div class="w-full max-w-4xl flex flex-col lg:flex-row items-center justify-center gap-10 lg:gap-16 z-10">
+    <!-- 공간 백라이트 싱크 -->
+    <div id="backlight" class="absolute w-[500px] h-[500px] rounded-full aquarium-backlight z-0 top-[35%] left-[50%] -translate-x-1/2 -translate-y-1/2 bg-cyan-500"></div>
+
+    <!-- 화면 전체를 가득 채우는 몽환적인 유동 자연 캔버스 -->
+    <canvas id="aquariumCanvas" class="absolute inset-0 w-full h-full z-0 block pointer-events-none"></canvas>
+
+    <!-- 오른쪽: 초간결 미니멀 공부 대시보드 (깜빡임 버그 유발 요소를 제거하고 완성도 극대화) -->
+    <div class="w-full max-w-[320px] flex flex-col items-center text-center z-10 bg-[#07070d] border border-white/[0.04] p-8 rounded-[36px] shadow-[0_30px_100px_rgba(0,0,0,0.8)]">
         
-        <!-- 왼쪽: 자연 수조/숲 뷰어 (빛 번짐 테두리 및 프레임을 제거하여 화면 전체 어둠과 완벽히 동화) -->
-        <div id="canvas-container" class="relative w-full max-w-[380px] aspect-[4/5] overflow-hidden">
-            <!-- 캔버스의 모든 스타일라인을 배제하여 투명하게 중첩 -->
-            <canvas id="aquariumCanvas" class="absolute inset-0 w-full h-full z-0 block"></canvas>
-            
-            <div id="view-label" class="absolute bottom-6 left-6 z-10 text-[8px] text-white/10 font-light tracking-[0.3em] uppercase pointer-events-none">
-                Bioluminescent Sanctuary
+        <!-- 환경 전환 탭 -->
+        <div class="flex bg-white/[0.02] border border-white/[0.04] p-1 rounded-xl mb-6 w-full">
+            <button onclick="switchEnvironment('jellyfish')" id="tab-jellyfish" class="mode-tab flex-1 py-2 rounded-lg text-xs font-medium tracking-wide bg-white/[0.05] text-cyan-400">
+                심해 해파리
+            </button>
+            <button onclick="switchEnvironment('firefly')" id="tab-firefly" class="mode-tab flex-1 py-2 rounded-lg text-xs font-medium tracking-wide text-slate-500 hover:text-slate-300">
+                반딧불이 숲
+            </button>
+        </div>
+
+        <!-- 현재 집중 모드 인디케이터 배지 -->
+        <div class="flex items-center mb-1">
+            <div id="mode-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-medium tracking-wider bg-cyan-500/10 text-cyan-400 border border-cyan-500/15 transition-all duration-500 uppercase">
+                STUDYING
             </div>
         </div>
 
-        <!-- 오른쪽: 초간결 미니멀 공부 대시보드 -->
-        <div class="w-full max-w-[300px] flex flex-col items-center lg:items-start text-center lg:text-left">
-            
-            <!-- 환경 전환 탭 -->
-            <div class="flex bg-white/[0.02] border border-white/[0.04] p-1 rounded-xl mb-6 w-full">
-                <button onclick="switchEnvironment('jellyfish')" id="tab-jellyfish" class="mode-tab flex-1 py-2 rounded-lg text-xs font-medium tracking-wide bg-white/[0.05] text-cyan-400">
-                    심해 해파리
-                </button>
-                <button onclick="switchEnvironment('firefly')" id="tab-firefly" class="mode-tab flex-1 py-2 rounded-lg text-xs font-medium tracking-wide text-slate-500 hover:text-slate-300">
-                    반딧불이 숲
-                </button>
-            </div>
+        <!-- 초대형 얇은 미니멀 타이머 디스플레이 -->
+        <div id="timer-display" class="timer-font text-7xl md:text-8xl tracking-tighter text-slate-100 leading-none">
+            30:00
+        </div>
 
-            <!-- 현재 집중 모드 인디케이터 배지 -->
-            <div class="flex items-center mb-1">
-                <div id="mode-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-medium tracking-wider bg-cyan-500/10 text-cyan-400 border border-cyan-500/15 transition-all duration-500 uppercase">
-                    STUDYING
-                </div>
-            </div>
-
-            <!-- 초대형 얇은 미니멀 타이머 디스플레이 -->
-            <div id="timer-display" class="timer-font text-7xl md:text-8xl tracking-tighter text-slate-100 leading-none">
-                30:00
-            </div>
-
-            <!-- 수조 조명 컨트롤러 (크고 고급스러운 원형 칩 복구) -->
-            <div id="lighting-section" class="w-full mt-6 flex flex-col items-center lg:items-start gap-2.5 transition-opacity duration-500">
-                <span class="text-[10px] text-slate-500 tracking-wider">LIGHTING</span>
-                <div class="flex items-center gap-3">
-                    <button id="color-btn-cyan" onclick="setThemeColor('cyan')" class="color-dot w-8 h-8 rounded-full bg-cyan-500 border-2 border-white/60 active:scale-95 shadow-[0_0_12px_rgba(6,182,212,0.6)]" title="아쿠아 시안"></button>
-                    <button id="color-btn-magenta" onclick="setThemeColor('magenta')" class="color-dot w-8 h-8 rounded-full bg-pink-500 border-2 border-transparent active:scale-95" title="마젠타 핑크"></button>
-                    <button id="color-btn-emerald" onclick="setThemeColor('emerald')" class="color-dot w-8 h-8 rounded-full bg-emerald-500 border-2 border-transparent active:scale-95" title="에메랄드 그린"></button>
-                    <button id="color-btn-purple" onclick="setThemeColor('purple')" class="color-dot w-8 h-8 rounded-full bg-purple-600 border-2 border-transparent active:scale-95" title="미스틱 퍼플"></button>
-                    <button id="color-btn-gold" onclick="setThemeColor('gold')" class="color-dot w-8 h-8 rounded-full bg-amber-400 border-2 border-transparent active:scale-95" title="오라 골드"></button>
-                </div>
-            </div>
-
-            <!-- 생명체 소환 카운터 -->
-            <div class="mt-6 w-full flex items-center justify-between border-t border-white/5 pt-5 text-xs text-slate-500 font-light">
-                <span id="creature-label">수조 속 해파리</span>
-                <span id="creature-count" class="font-normal text-cyan-400 bg-cyan-500/5 px-2.5 py-1 rounded text-[11px] font-semibold border border-cyan-500/10">0마리</span>
-            </div>
-
-            <!-- 미니멀 얇은 컨트롤 버튼 배열 -->
-            <div class="flex flex-col gap-2 w-full mt-8">
-                <div class="flex items-center gap-2 w-full">
-                    <button id="btn-toggle" onclick="toggleTimer()" class="flex-[2] py-3.5 px-5 rounded-xl font-medium text-xs bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition-all shadow-md shadow-cyan-500/5 active:scale-[0.98]">
-                        시작
-                    </button>
-                    <button onclick="resetTimer()" class="flex-1 py-3.5 px-5 rounded-xl font-medium text-xs bg-[#0b0c13] hover:bg-[#12141f] text-slate-300 border border-white/5 transition-all active:scale-[0.98]">
-                        리셋
-                    </button>
-                </div>
-                <!-- 무소음 즉시 방류 (테스트용) -->
-                <button onclick="instantCycle()" class="py-2.5 px-4 rounded-lg font-light text-[10px] bg-[#030306]/50 hover:bg-white/[0.02] border border-white/[0.02] text-slate-600 hover:text-slate-400 transition-all" id="btn-cheat">
-                    테스트 소환
-                </button>
+        <!-- 수조 조명 컨트롤러 -->
+        <div id="lighting-section" class="w-full mt-6 flex flex-col items-center gap-2.5 transition-opacity duration-500">
+            <span class="text-[10px] text-slate-500 tracking-wider">LIGHTING</span>
+            <div class="flex items-center gap-3">
+                <button id="color-btn-cyan" onclick="setThemeColor('cyan')" class="color-dot w-8 h-8 rounded-full bg-cyan-500 border-2 border-white/60 active:scale-95 shadow-[0_0_12px_rgba(6,182,212,0.6)]" title="아쿠아 시안"></button>
+                <button id="color-btn-magenta" onclick="setThemeColor('magenta')" class="color-dot w-8 h-8 rounded-full bg-pink-500 border-2 border-transparent active:scale-95" title="마젠타 핑크"></button>
+                <button id="color-btn-emerald" onclick="setThemeColor('emerald')" class="color-dot w-8 h-8 rounded-full bg-emerald-500 border-2 border-transparent active:scale-95" title="에메랄드 그린"></button>
+                <button id="color-btn-purple" onclick="setThemeColor('purple')" class="color-dot w-8 h-8 rounded-full bg-purple-600 border-2 border-transparent active:scale-95" title="미스틱 퍼플"></button>
+                <button id="color-btn-gold" onclick="setThemeColor('gold')" class="color-dot w-8 h-8 rounded-full bg-amber-400 border-2 border-transparent active:scale-95" title="오라 골드"></button>
             </div>
         </div>
+
+        <!-- 생명체 소환 카운터 -->
+        <div class="mt-6 w-full flex items-center justify-between border-t border-white/5 pt-5 text-xs text-slate-500 font-light">
+            <span id="creature-label">수조 속 해파리</span>
+            <span id="creature-count" class="font-normal text-cyan-400 bg-cyan-500/5 px-2.5 py-1 rounded text-[11px] font-semibold border border-cyan-500/10">0마리</span>
+        </div>
+
+        <!-- 미니멀 얇은 컨트롤 버튼 배열 -->
+        <div class="flex flex-col gap-2 w-full mt-8">
+            <div class="flex items-center gap-2 w-full">
+                <button id="btn-toggle" onclick="toggleTimer()" class="flex-[2] py-3.5 px-5 rounded-xl font-medium text-xs bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition-all shadow-md shadow-cyan-500/5 active:scale-[0.98]">
+                    시작
+                </button>
+                <button onclick="resetTimer()" class="flex-1 py-3.5 px-5 rounded-xl font-medium text-xs bg-[#0b0c13] hover:bg-[#12141f] text-slate-300 border border-white/5 transition-all active:scale-[0.98]">
+                    리셋
+                </button>
+            </div>
+            <!-- 무소음 즉시 방류 (테스트용) -->
+            <button onclick="instantCycle()" class="py-2.5 px-4 rounded-lg font-light text-[10px] bg-[#030306]/50 hover:bg-white/[0.02] border border-white/[0.02] text-slate-600 hover:text-slate-400 transition-all" id="btn-cheat">
+                테스트 소환
+            </button>
+        </div>
+    </div>
+
+    <!-- 구석에 흐릿하게 표시될 시그니처 워터마크 -->
+    <div id="view-label" class="absolute bottom-8 left-8 z-10 text-[8px] text-white/10 font-light tracking-[0.3em] uppercase pointer-events-none">
+        Bioluminescent Sanctuary
     </div>
 
     <!-- 미니멀 알림용 토스트 -->
@@ -178,7 +183,6 @@
         const btnToggle = document.getElementById('btn-toggle');
         const bellSound = document.getElementById('bell-sound');
         const viewLabel = document.getElementById('view-label');
-        const canvasContainer = document.getElementById('canvas-container');
 
         const creatureLabel = document.getElementById('creature-label');
         const btnCheat = document.getElementById('btn-cheat');
@@ -207,6 +211,9 @@
         window.setThemeColor = function(colorName) {
             activeColorKey = colorName;
             const preset = colorPresets[colorName];
+            
+            const backlight = document.getElementById('backlight');
+            if (backlight) backlight.style.background = preset.btnColor;
             
             const buttons = document.querySelectorAll('.color-dot');
             buttons.forEach(btn => {
@@ -328,6 +335,7 @@
             isRunning = false;
             currentMode = 'STUDY';
             timeLeft = TIMES.STUDY;
+            btnToggle.textContent = '집중 루틴 시작';
             updateStyleWithPreset();
             renderDisplay();
         }
@@ -387,9 +395,8 @@
         let backgroundBubbles = [];
 
         function resizeCanvas() {
-            const rect = canvas.getBoundingClientRect();
-            canvas.width = rect.width * window.devicePixelRatio;
-            canvas.height = rect.height * window.devicePixelRatio;
+            canvas.width = window.innerWidth * window.devicePixelRatio;
+            canvas.height = window.innerHeight * window.devicePixelRatio;
             ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
         }
         window.addEventListener('resize', resizeCanvas);
@@ -397,16 +404,16 @@
 
         class Bubble {
             constructor() {
-                const w = canvas.width / window.devicePixelRatio;
-                const h = canvas.height / window.devicePixelRatio;
+                const w = window.innerWidth;
+                const h = window.innerHeight;
                 this.x = Math.random() * w;
                 this.y = h + Math.random() * 20;
                 this.radius = Math.random() * 1.0 + 0.3;
                 this.speedY = Math.random() * 0.12 + 0.04; 
             }
             update() {
-                const w = canvas.width / window.devicePixelRatio;
-                const h = canvas.height / window.devicePixelRatio;
+                const w = window.innerWidth;
+                const h = window.innerHeight;
                 this.y -= this.speedY;
                 this.x += Math.sin(this.y * 0.01) * 0.05;
                 if (this.y < -10) {
@@ -429,11 +436,14 @@
         // 극도로 사실적인 해파리 생체 구조 클래스
         class RealisticJellyfish {
             constructor() {
-                const w = canvas.width / window.devicePixelRatio;
-                const h = canvas.height / window.devicePixelRatio;
+                const w = window.innerWidth;
+                const h = window.innerHeight;
                 
-                this.x = w/2 + (Math.random() - 0.5) * (w - 140);
-                this.y = h/2 + (Math.random() - 0.5) * (h - 220);
+                const spawnMarginX = w > 640 ? 120 : 60;
+                const spawnMarginY = h > 640 ? 120 : 60;
+
+                this.x = spawnMarginX + Math.random() * (w - spawnMarginX * 2);
+                this.y = spawnMarginY + Math.random() * (h - spawnMarginY * 2);
                 
                 this.vx = 0;
                 this.vy = -0.15; 
@@ -484,8 +494,8 @@
             }
 
             update(index) {
-                const w = canvas.width / window.devicePixelRatio;
-                const h = canvas.height / window.devicePixelRatio;
+                const w = window.innerWidth;
+                const h = window.innerHeight;
                 
                 this.pulseTimer += this.pulseDurationSpeed;
                 
@@ -523,7 +533,7 @@
                     const dx = this.x - other.x;
                     const dy = this.y - other.y;
                     const distance = Math.sqrt(dx * dx + dy * dy);
-                    const safeDistance = (this.radius + other.radius) * 2.3;
+                    const safeDistance = (this.radius + other.radius) * 2.5;
 
                     if (distance < safeDistance && distance > 0) {
                         const pushForce = (safeDistance - distance) * 0.0003;
@@ -532,24 +542,32 @@
                     }
                 });
 
-                // 벽 바운더리
-                const margin = this.radius + 35;
-                const centerWeight = 0.008; 
+                const edgeMarginX = w > 640 ? 80 : 40;
+                const edgeMarginY = h > 640 ? 80 : 40;
 
-                if (this.x < margin) {
-                    this.vx += (margin - this.x) * centerWeight;
-                    this.targetAngle = -Math.PI / 2 + Math.random() * 0.3;
-                } else if (this.x > w - margin) {
-                    this.vx -= (this.x - (w - margin)) * centerWeight;
-                    this.targetAngle = -Math.PI / 2 - Math.random() * 0.3;
+                const limitLeft = edgeMarginX + this.radius;
+                const limitRight = w - edgeMarginX - this.radius;
+                const limitTop = edgeMarginY + this.radius;
+                const limitBottom = h - edgeMarginY - this.radius;
+
+                if (this.x < limitLeft) {
+                    this.x = limitLeft;
+                    this.vx *= -0.3;
+                    this.targetAngle = Math.atan2(this.vy, this.vx);
+                } else if (this.x > limitRight) {
+                    this.x = limitRight;
+                    this.vx *= -0.3;
+                    this.targetAngle = Math.atan2(this.vy, this.vx);
                 }
 
-                if (this.y < margin + 15) {
-                    this.vy += (margin + 15 - this.y) * centerWeight * 1.5;
-                    this.targetAngle = Math.PI / 2 + (Math.random() - 0.5) * 0.3;
-                } else if (this.y > h - margin - 20) {
-                    this.vy -= (this.y - (h - margin - 20)) * centerWeight * 1.5;
-                    this.targetAngle = -Math.PI / 2 + (Math.random() - 0.5) * 0.3;
+                if (this.y < limitTop) {
+                    this.y = limitTop;
+                    this.vy *= -0.3;
+                    this.targetAngle = Math.atan2(this.vy, this.vx);
+                } else if (this.y > limitBottom) {
+                    this.y = limitBottom;
+                    this.vy *= -0.3;
+                    this.targetAngle = -Math.PI / 2 + (Math.random() - 0.5) * 0.5;
                 }
 
                 const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
@@ -729,11 +747,14 @@
         // 극도로 정교해진 유기적 광선식 반딧불이 클래스
         class DetailedFirefly {
             constructor() {
-                const w = canvas.width / window.devicePixelRatio;
-                const h = canvas.height / window.devicePixelRatio;
+                const w = window.innerWidth;
+                const h = window.innerHeight;
                 
-                this.x = Math.random() * w;
-                this.y = Math.random() * h;
+                const spawnMarginX = w > 640 ? 100 : 50;
+                const spawnMarginY = h > 640 ? 100 : 50;
+
+                this.x = spawnMarginX + Math.random() * (w - spawnMarginX * 2);
+                this.y = spawnMarginY + Math.random() * (h - spawnMarginY * 2);
                 
                 this.vx = (Math.random() - 0.5) * 0.25;
                 this.vy = (Math.random() - 0.5) * 0.25;
@@ -761,8 +782,8 @@
             }
 
             update(index) {
-                const w = canvas.width / window.devicePixelRatio;
-                const h = canvas.height / window.devicePixelRatio;
+                const w = window.innerWidth;
+                const h = window.innerHeight;
                 
                 this.blinkTimer += this.blinkSpeed;
                 
@@ -795,12 +816,18 @@
                     }
                 });
 
-                // 숲의 밤하늘 경계 소프트 가두기
-                const margin = 15;
-                if (this.x < margin) { this.x = margin; this.angle = 0; }
-                if (this.x > w - margin) { this.x = w - margin; this.angle = Math.PI; }
-                if (this.y < margin) { this.y = margin; this.angle = Math.PI / 2; }
-                if (this.y > h - margin) { this.y = h - margin; this.angle = -Math.PI / 2; }
+                const edgeMarginX = w > 640 ? 60 : 30;
+                const edgeMarginY = h > 640 ? 60 : 30;
+
+                const limitLeft = edgeMarginX;
+                const limitRight = w - edgeMarginX;
+                const limitTop = edgeMarginY;
+                const limitBottom = h - edgeMarginY;
+
+                if (this.x < limitLeft) { this.x = limitLeft; this.angle = 0; }
+                if (this.x > limitRight) { this.x = limitRight; this.angle = Math.PI; }
+                if (this.y < limitTop) { this.y = limitTop; this.angle = Math.PI / 2; }
+                if (this.y > limitBottom) { this.y = limitBottom; this.angle = -Math.PI / 2; }
 
                 if (this.alpha < this.maxAlpha) {
                     this.alpha += this.fadeRate;
@@ -808,7 +835,6 @@
             }
 
             draw() {
-                // 비대칭 실제 생체 전기 깜빡임 유도 (급격하게 팟- 켜진 뒤 잔상처럼 서서히 부드럽게 소멸하는 호흡식 파형)
                 const rawSine = Math.sin(this.blinkTimer);
                 const pulse = Math.pow(Math.max(0, rawSine * 0.8 + 0.25), 3.0); 
                 const currentAlpha = this.alpha * pulse;
@@ -864,7 +890,6 @@
             jellyfishes.push(new RealisticJellyfish());
         }
 
-        // 반딧불이 생성
         function spawnFirefly() {
             fireflies.push(new DetailedFirefly());
         }
@@ -875,15 +900,13 @@
         }
 
         function animate() {
-            const w = canvas.width / window.devicePixelRatio;
-            const h = canvas.height / window.devicePixelRatio;
+            const w = window.innerWidth;
+            const h = window.innerHeight;
 
-            // 캔버스 클리어 색상을 body의 background-color에 100% 매칭
-            // RGBA 누적 채색을 통해 경계선 박스 흔적을 완벽히 상쇄합니다.
             if (currentEnvironment === 'jellyfish') {
-                ctx.fillStyle = 'rgba(1, 1, 3, 0.12)'; // body background-color #010103과 동일
+                ctx.fillStyle = 'rgba(1, 1, 3, 0.12)'; 
             } else {
-                ctx.fillStyle = 'rgba(2, 3, 2, 0.15)'; // body background-color #020302와 동일
+                ctx.fillStyle = 'rgba(2, 3, 2, 0.15)'; 
             }
             ctx.fillRect(0, 0, w, h);
 
