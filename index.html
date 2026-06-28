@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deep Sea & Firefly Minimalist Timer</title>
+    <title>Deep Sea & Firefly Seamless Timer</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -20,15 +21,7 @@
             font-weight: 100;
         }
 
-        /* 공간 음영용 실시간 글로우 백라이트 */
-        .aquarium-backlight {
-            filter: blur(150px);
-            opacity: 0.12;
-            transition: background 2.5s ease-in-out;
-            pointer-events: none;
-        }
-
-        /* 라이팅/모드 칩 인터랙티브 */
+        /* 호버 시 부드러운 스케일 업 인터랙션만 남겨둔 상태 */
         .color-dot, .mode-tab {
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
@@ -39,14 +32,11 @@
 </head>
 <body class="text-slate-400 min-h-screen flex flex-col items-center justify-center p-4 select-none overflow-hidden relative">
 
-    <!-- 공간 백라이트 싱크 -->
-    <div id="backlight" class="absolute w-[500px] h-[500px] rounded-full aquarium-backlight z-0 top-[35%] left-[50%] -translate-x-1/2 -translate-y-1/2 bg-cyan-500"></div>
-
     <div class="w-full max-w-4xl flex flex-col lg:flex-row items-center justify-center gap-10 lg:gap-16 z-10">
         
-        <!-- 왼쪽: 캔버스 기반 자연 수조/숲 뷰어 (테두리 및 배경 경계선을 완전히 제거하여 전체 화면과 일체화) -->
+        <!-- 왼쪽: 자연 수조/숲 뷰어 (빛 번짐 테두리 및 프레임을 제거하여 화면 전체 어둠과 완벽히 동화) -->
         <div id="canvas-container" class="relative w-full max-w-[380px] aspect-[4/5] overflow-hidden">
-            <!-- 투명 캔버스 레이어로 전체 화면의 어둠과 연결 -->
+            <!-- 캔버스의 모든 스타일라인을 배제하여 투명하게 중첩 -->
             <canvas id="aquariumCanvas" class="absolute inset-0 w-full h-full z-0 block"></canvas>
             
             <div id="view-label" class="absolute bottom-6 left-6 z-10 text-[8px] text-white/10 font-light tracking-[0.3em] uppercase pointer-events-none">
@@ -79,7 +69,7 @@
                 30:00
             </div>
 
-            <!-- 수조 조명 컨트롤러 -->
+            <!-- 수조 조명 컨트롤러 (크고 고급스러운 원형 칩 복구) -->
             <div id="lighting-section" class="w-full mt-6 flex flex-col items-center lg:items-start gap-2.5 transition-opacity duration-500">
                 <span class="text-[10px] text-slate-500 tracking-wider">LIGHTING</span>
                 <div class="flex items-center gap-3">
@@ -187,7 +177,6 @@
         const creatureCountDisplay = document.getElementById('creature-count');
         const btnToggle = document.getElementById('btn-toggle');
         const bellSound = document.getElementById('bell-sound');
-        const backlight = document.getElementById('backlight');
         const viewLabel = document.getElementById('view-label');
         const canvasContainer = document.getElementById('canvas-container');
 
@@ -218,8 +207,6 @@
         window.setThemeColor = function(colorName) {
             activeColorKey = colorName;
             const preset = colorPresets[colorName];
-            
-            backlight.style.background = preset.btnColor;
             
             const buttons = document.querySelectorAll('.color-dot');
             buttons.forEach(btn => {
@@ -451,7 +438,6 @@
                 this.vx = 0;
                 this.vy = -0.15; 
                 
-                // 개성분류 정의
                 this.personality = Math.random() < 0.45 ? 'active' : 'calm';
                 
                 this.radius = this.personality === 'active' 
@@ -507,7 +493,6 @@
                 const isContracting = rawPulse > 0.65; 
 
                 if (isContracting) {
-                    // 수축: 폭은 줄고 고도는 증가
                     this.domeRatioX += (0.75 - this.domeRatioX) * 0.12;
                     this.domeRatioY += (1.18 - this.domeRatioY) * 0.12;
 
@@ -521,7 +506,6 @@
                         this.targetAngle = -Math.PI/2 + (Math.random() - 0.5) * 1.0;
                     }
                 } else {
-                    // 이완: 동그란 돔 원형 회복
                     this.domeRatioX += (1.05 - this.domeRatioX) * 0.03;
                     this.domeRatioY += (0.91 - this.domeRatioY) * 0.03;
                 }
@@ -754,23 +738,22 @@
                 this.vx = (Math.random() - 0.5) * 0.25;
                 this.vy = (Math.random() - 0.5) * 0.25;
                 
-                // 개체 특징 1: 활발하게 떠도는 방랑형과 한곳에 조용히 깃드는 부유형 성격 부여
+                // 개체 특징 1: 성격 부여
                 this.personality = Math.random() < 0.55 ? 'calm' : 'wandering';
                 
-                // 개체 특징 2: 날개 및 몸통 크기의 개별 다형성 (0.8px ~ 1.7px)
+                // 개체 특징 2: 크기 분화
                 this.radius = 0.8 + Math.random() * 0.9;
                 
                 this.angle = Math.random() * Math.PI * 2;
                 
-                // 개체 특징 3: 저마다 엇갈리는 고유 명멸 속도(Blink Speed) 및 명멸 출발점(Phase Offset)
+                // 개체 특징 3: 고유 명멸 주기
                 this.blinkTimer = Math.random() * Math.PI * 2;
                 this.blinkSpeed = 0.012 + Math.random() * 0.018; 
                 
-                // 웅장하고 부드러운 중대형 반경의 아우라 산란 비율 설정
                 this.maxGlowMultiplier = 10.0 + Math.random() * 8.0; 
                 this.maxAlpha = 0.6 + Math.random() * 0.25;
                 
-                // 개체 특징 5: 아늑한 빛 톤의 다채로운 스펙트럼 화장 (황록색, 아늑한 밤숲 연두색, 그윽한 황금빛)
+                // 개체 특징 5: 따뜻한 숲 황금빛 파장
                 this.baseHue = 50 + Math.random() * 26; 
                 
                 this.alpha = 0; 
@@ -797,7 +780,7 @@
                 this.x += this.vx;
                 this.y += this.vy;
 
-                // 개체 충돌 제어 (동일 지점에 모여 뭉쳐지는 것 방지)
+                // 개체 분산
                 fireflies.forEach((other, oIdx) => {
                     if (index === oIdx) return;
                     const dx = this.x - other.x;
@@ -812,7 +795,7 @@
                     }
                 });
 
-                // 숲의 밤하늘 경계 소프트 반사 가두기
+                // 숲의 밤하늘 경계 소프트 가두기
                 const margin = 15;
                 if (this.x < margin) { this.x = margin; this.angle = 0; }
                 if (this.x > w - margin) { this.x = w - margin; this.angle = Math.PI; }
@@ -833,30 +816,22 @@
                 if (currentAlpha > 0.01) {
                     ctx.save();
                     
-                    // 가산 혼합(Add Blend/Screen) 모드로 물리적 실제 밤안개 속 광원 산란 완벽 재현
                     ctx.globalCompositeOperation = 'screen';
 
-                    // 조금 더 영롱하게 커진 반사 반경 적용
                     const glowRadius = this.radius * (6.0 + pulse * this.maxGlowMultiplier);
                     
                     const flyAngle = Math.atan2(this.vy, this.vx);
-                    // 광원 오프셋 배치 (빛의 꼬리가 반딧불이 꽁무니 끝에 편향 부합)
                     const glowOffsetX = -Math.cos(flyAngle) * (this.radius * 0.8);
                     const glowOffsetY = -Math.sin(flyAngle) * (this.radius * 0.8);
 
-                    // 광원 중심에서부터 멀어지는 감쇄 수렴 그라데이션
                     const grad = ctx.createRadialGradient(
                         this.x + glowOffsetX, this.y + glowOffsetY, 0, 
                         this.x + glowOffsetX, this.y + glowOffsetY, glowRadius
                     );
                     
-                    // 1) 초고밀도 순백색 발광 코어 (가운데 눈부심 포인트)
                     grad.addColorStop(0, `hsla(${this.baseHue}, 100%, 97%, ${currentAlpha * 0.95})`);
-                    // 2) 네온 황록색 고압 광륜 (Halo)
                     grad.addColorStop(0.15, `hsla(${this.baseHue + 4}, 100%, 75%, ${currentAlpha * 0.7})`);
-                    // 3) 아늑하고 따스하게 공간 전체로 퍼져나가는 풍성한 대기 산란광 영역
                     grad.addColorStop(0.45, `hsla(${this.baseHue - 6}, 100%, 55%, ${currentAlpha * 0.25})`);
-                    // 4) 주변 대기 수렴 경계선
                     grad.addColorStop(1, `hsla(${this.baseHue - 15}, 100%, 45%, 0)`);
                     
                     ctx.beginPath();
@@ -864,7 +839,6 @@
                     ctx.fillStyle = grad;
                     ctx.fill();
 
-                    // 블렌딩 모드를 일반으로 원위치한 후 작고 어두운 몸통 렌더링
                     ctx.globalCompositeOperation = 'source-over';
                     ctx.translate(this.x, this.y);
                     ctx.rotate(flyAngle);
@@ -904,10 +878,12 @@
             const w = canvas.width / window.devicePixelRatio;
             const h = canvas.height / window.devicePixelRatio;
 
+            // 캔버스 클리어 색상을 body의 background-color에 100% 매칭
+            // RGBA 누적 채색을 통해 경계선 박스 흔적을 완벽히 상쇄합니다.
             if (currentEnvironment === 'jellyfish') {
-                ctx.fillStyle = 'rgba(1, 1, 3, 0.12)';
+                ctx.fillStyle = 'rgba(1, 1, 3, 0.12)'; // body background-color #010103과 동일
             } else {
-                ctx.fillStyle = 'rgba(2, 3, 2, 0.15)'; 
+                ctx.fillStyle = 'rgba(2, 3, 2, 0.15)'; // body background-color #020302와 동일
             }
             ctx.fillRect(0, 0, w, h);
 
