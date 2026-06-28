@@ -1,0 +1,1875 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep Sea & Firefly Minimalist Timer</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;1,100&family=Noto+Sans+KR:wght@300;400;500&display=swap');
+        
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #010103;
+            transition: background-color 2.5s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        
+        .timer-font {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 100;
+        }
+
+        /* 공간 음영용 실시간 글로우 백라이트 */
+        .aquarium-backlight {
+            filter: blur(150px);
+            opacity: 0.12;
+            transition: background 2.5s ease-in-out;
+            pointer-events: none;
+        }
+
+        /* 라이팅/모드 칩 인터랙티브 */
+        .color-dot, .mode-tab {
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .color-dot:hover {
+            transform: scale(1.15);
+        }
+    </style>
+</head>
+<body class="text-slate-400 min-h-screen flex flex-col items-center justify-center p-4 select-none overflow-hidden relative">
+
+    <!-- 공간 백라이트 싱크 -->
+    <div id="backlight" class="absolute w-[500px] h-[500px] rounded-full aquarium-backlight z-0 top-[35%] left-[50%] -translate-x-1/2 -translate-y-1/2 bg-cyan-500"></div>
+
+    <div class="w-full max-w-4xl flex flex-col lg:flex-row items-center justify-center gap-10 lg:gap-16 z-10">
+        
+        <!-- 왼쪽: 캔버스 기반 인터랙티브 자연 수조/숲 뷰어 -->
+        <div id="canvas-container" class="relative w-full max-w-[380px] aspect-[4/5] bg-[#020203] rounded-[32px] border border-white/[0.02] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.98)] overflow-hidden">
+            <div id="glass-lens" class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.003] to-white/[0.015] pointer-events-none z-10"></div>
+            
+            <canvas id="aquariumCanvas" class="absolute inset-0 w-full h-full z-0 block"></canvas>
+            
+            <div id="view-label" class="absolute bottom-6 left-6 z-10 text-[8px] text-white/10 font-light tracking-[0.3em] uppercase pointer-events-none">
+                Bioluminescent Sanctuary
+            </div>
+            
+            <div id="tank-top-glow" class="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-cyan-500/15 to-transparent transition-all duration-1000"></div>
+        </div>
+
+        <!-- 오른쪽: 초간결 미니멀 공부 대시보드 -->
+        <div class="w-full max-w-[300px] flex flex-col items-center lg:items-start text-center lg:text-left">
+            
+            <!-- 환경 전환 탭 -->
+            <div class="flex bg-white/[0.02] border border-white/[0.04] p-1 rounded-xl mb-6 w-full">
+                <button onclick="switchEnvironment('jellyfish')" id="tab-jellyfish" class="mode-tab flex-1 py-2 rounded-lg text-xs font-medium tracking-wide bg-white/[0.05] text-cyan-400">
+                    심해 해파리
+                </button>
+                <button onclick="switchEnvironment('firefly')" id="tab-firefly" class="mode-tab flex-1 py-2 rounded-lg text-xs font-medium tracking-wide text-slate-500 hover:text-slate-300">
+                    반딧불이 숲
+                </button>
+            </div>
+
+            <!-- 현재 집중 모드 인디케이터 배지 -->
+            <div class="flex items-center mb-1">
+                <div id="mode-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-medium tracking-wider bg-cyan-500/10 text-cyan-400 border border-cyan-500/15 transition-all duration-500 uppercase">
+                    STUDYING
+                </div>
+            </div>
+
+            <!-- 초대형 얇은 미니멀 타이머 디스플레이 -->
+            <div id="timer-display" class="timer-font text-7xl md:text-8xl tracking-tighter text-slate-100 leading-none">
+                30:00
+            </div>
+
+            <!-- 수조 조명 컨트롤러 -->
+            <div id="lighting-section" class="w-full mt-6 flex flex-col items-center lg:items-start gap-2.5 transition-opacity duration-500">
+                <span class="text-[10px] text-slate-500 tracking-wider">LIGHTING</span>
+                <div class="flex items-center gap-3">
+                    <button onclick="setThemeColor('cyan')" class="color-dot w-8 h-8 rounded-full bg-cyan-500 border-2 border-white/20 active:scale-95 shadow-[0_0_12px_rgba(6,182,212,0.3)]" title="아쿠아 시안" style="border-color: rgba(255, 255, 255, 0.6);"></button>
+                    <button onclick="setThemeColor('magenta')" class="color-dot w-8 h-8 rounded-full bg-pink-500 border-2 border-transparent active:scale-95" title="마젠타 핑크"></button>
+                    <button onclick="setThemeColor('emerald')" class="color-dot w-8 h-8 rounded-full bg-emerald-500 border-2 border-transparent active:scale-95" title="에메랄드 그린"></button>
+                    <button onclick="setThemeColor('purple')" class="color-dot w-8 h-8 rounded-full bg-purple-600 border-2 border-transparent active:scale-95" title="미스틱 퍼플"></button>
+                    <button onclick="setThemeColor('gold')" class="color-dot w-8 h-8 rounded-full bg-amber-400 border-2 border-transparent active:scale-95" title="오라 골드"></button>
+                </div>
+            </div>
+
+            <!-- 생명체 소환 카운터 -->
+            <div class="mt-6 w-full flex items-center justify-between border-t border-white/5 pt-5 text-xs text-slate-500 font-light">
+                <span id="creature-label">수조 속 해파리</span>
+                <span id="creature-count" class="font-normal text-cyan-400 bg-cyan-500/5 px-2 py-0.5 rounded text-[11px] font-semibold border border-cyan-500/10">0마리</span>
+            </div>
+
+            <!-- 미니멀 얇은 컨트롤 버튼 배열 -->
+            <div class="flex flex-col gap-2 w-full mt-8">
+                <div class="flex items-center gap-2 w-full">
+                    <button id="btn-toggle" onclick="toggleTimer()" class="flex-[2] py-3.5 px-5 rounded-xl font-medium text-xs bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition-all shadow-md shadow-cyan-500/5 active:scale-[0.98]">
+                        시작
+                    </button>
+                    <button onclick="resetTimer()" class="flex-1 py-3.5 px-5 rounded-xl font-medium text-xs bg-[#0b0c13] hover:bg-[#12141f] text-slate-300 border border-white/5 transition-all active:scale-[0.98]">
+                        리셋
+                    </button>
+                </div>
+                <!-- 무소음 즉시 방류 (테스트용) -->
+                <button onclick="instantCycle()" class="py-2.5 px-4 rounded-lg font-light text-[10px] bg-[#030306]/50 hover:bg-white/[0.02] border border-white/[0.02] text-slate-600 hover:text-slate-400 transition-all" id="btn-cheat">
+                    테스트 소환
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 미니멀 알림용 토스트 -->
+    <div id="alarm-toast" class="fixed bottom-6 right-6 z-50 transform translate-y-12 opacity-0 pointer-events-none transition-all duration-500 bg-slate-950/95 backdrop-blur-md border border-white/5 px-5 py-3.5 rounded-xl shadow-2xl flex items-center gap-3 text-xs">
+        <span id="toast-icon">🔔</span>
+        <div class="flex flex-col">
+            <span class="font-semibold text-slate-200" id="toast-title">STATUS</span>
+            <span class="text-[10px] text-slate-400 mt-0.5" id="toast-message">시간이 완료되었습니다.</span>
+        </div>
+    </div>
+
+    <!-- 알림 소리 -->
+    <audio id="bell-sound" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-120.wav" preload="auto"></audio>
+
+    <script>
+        const TIMES = {
+            STUDY: 30 * 60,
+            REVIEW: 5 * 60,
+            BREAK: 5 * 60
+        };
+
+        let currentMode = 'STUDY'; 
+        let timeLeft = TIMES.STUDY;
+        let timerInterval = null;
+        let isRunning = false;
+        let completedCycles = 0;
+        
+        let currentEnvironment = 'jellyfish';
+
+        const colorPresets = {
+            cyan: {
+                hue: 195,
+                btnColor: '#06b6d4',
+                badgeText: 'text-cyan-400',
+                badgeBg: 'bg-cyan-500/10',
+                badgeBorder: 'border-cyan-500/15'
+            },
+            magenta: {
+                hue: 325,
+                btnColor: '#ec4899',
+                badgeText: 'text-pink-400',
+                badgeBg: 'bg-pink-500/10',
+                badgeBorder: 'border-pink-500/15'
+            },
+            emerald: {
+                hue: 150,
+                btnColor: '#10b981',
+                badgeText: 'text-emerald-400',
+                badgeBg: 'bg-emerald-500/10',
+                badgeBorder: 'border-emerald-500/15'
+            },
+            purple: {
+                hue: 275,
+                btnColor: '#9333ea',
+                badgeText: 'text-purple-400',
+                badgeBg: 'bg-purple-500/10',
+                badgeBorder: 'border-purple-500/15'
+            },
+            gold: {
+                hue: 38,
+                btnColor: '#f59e0b',
+                badgeText: 'text-amber-400',
+                badgeBg: 'bg-amber-500/10',
+                badgeBorder: 'border-amber-500/15'
+            }
+        };
+
+        let activeColorKey = 'cyan';
+
+        const timerDisplay = document.getElementById('timer-display');
+        const modeBadge = document.getElementById('mode-badge');
+        const creatureCountDisplay = document.getElementById('creature-count');
+        const btnToggle = document.getElementById('btn-toggle');
+        const bellSound = document.getElementById('bell-sound');
+        const backlight = document.getElementById('backlight');
+        const tankTopGlow = document.getElementById('tank-top-glow');
+        const viewLabel = document.getElementById('view-label');
+        const canvasContainer = document.getElementById('canvas-container');
+
+        const creatureLabel = document.getElementById('creature-label');
+        const btnCheat = document.getElementById('btn-cheat');
+        const lightingSection = document.getElementById('lighting-section');
+
+        const alarmToast = document.getElementById('alarm-toast');
+        const toastTitle = document.getElementById('toast-title');
+        const toastMessage = document.getElementById('toast-message');
+        const toastIcon = document.getElementById('toast-icon');
+        let toastTimeout = null;
+
+        function showToast(title, msg, icon) {
+            toastTitle.textContent = title;
+            toastMessage.textContent = msg;
+            toastIcon.textContent = icon;
+            alarmToast.classList.remove('translate-y-12', 'opacity-0', 'pointer-events-none');
+            
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(closeToast, 6000);
+        }
+
+        window.closeToast = function() {
+            alarmToast.classList.add('translate-y-12', 'opacity-0', 'pointer-events-none');
+        }
+
+        window.setThemeColor = function(colorName) {
+            activeColorKey = colorName;
+            const preset = colorPresets[colorName];
+            
+            backlight.style.background = preset.btnColor;
+            tankTopGlow.style.background = `linear-gradient(to right, transparent, ${preset.btnColor}26, transparent)`;
+            
+            const buttons = document.querySelectorAll('.color-dot');
+            buttons.forEach(btn => {
+                btn.style.borderColor = 'transparent';
+                btn.style.boxShadow = 'none';
+            });
+            
+            if (event && event.target && event.target.classList.contains('color-dot')) {
+                event.target.style.borderColor = 'rgba(255, 255, 255, 0.6)';
+                event.target.style.boxShadow = `0 0 14px ${preset.btnColor}`;
+            }
+            
+            updateStyleWithPreset();
+            renderDisplay();
+        }
+
+        function updateStyleWithPreset() {
+            const preset = colorPresets[activeColorKey];
+            modeBadge.className = `px-2.5 py-0.5 rounded-full text-[10px] font-medium tracking-wider ${preset.badgeBg} ${preset.badgeText} ${preset.badgeBorder} transition-all duration-500 uppercase`;
+            creatureCountDisplay.className = `font-normal ${preset.badgeText} ${preset.badgeBg} px-2.5 py-1 rounded text-[11px] font-semibold border ${preset.badgeBorder}`;
+            
+            if (isRunning) {
+                btnToggle.style.backgroundColor = '#0b0c13';
+                btnToggle.style.color = '#cbd5e1';
+                btnToggle.style.borderColor = '#1e293b';
+                btnToggle.style.boxShadow = 'none';
+                btnToggle.textContent = '일시 정지';
+            } else {
+                btnToggle.style.backgroundColor = preset.btnColor;
+                btnToggle.style.color = '#010103';
+                btnToggle.style.borderColor = 'transparent';
+                btnToggle.style.boxShadow = `0 8px 20px -3px ${preset.btnColor}15`;
+                btnToggle.textContent = '시작';
+            }
+        }
+
+        window.switchEnvironment = function(envName) {
+            if (currentEnvironment === envName) return;
+            currentEnvironment = envName;
+
+            const tabJellyfish = document.getElementById('tab-jellyfish');
+            const tabFirefly = document.getElementById('tab-firefly');
+
+            if (currentEnvironment === 'jellyfish') {
+                tabJellyfish.className = "mode-tab flex-1 py-1.5 rounded-lg text-xs font-medium tracking-wide bg-white/[0.04] text-cyan-400";
+                tabFirefly.className = "mode-tab flex-1 py-1.5 rounded-lg text-xs font-medium tracking-wide text-slate-500 hover:text-slate-300";
+                
+                creatureLabel.textContent = "수조 속 해파리";
+                btnCheat.textContent = "테스트 소환";
+                viewLabel.textContent = `Bioluminescent Sanctuary`;
+                lightingSection.style.opacity = "1";
+                lightingSection.style.pointerEvents = "auto";
+                
+                document.body.style.backgroundColor = "#010103";
+                setThemeColor('cyan');
+
+            } else {
+                tabFirefly.className = "mode-tab flex-1 py-1.5 rounded-lg text-xs font-medium tracking-wide bg-white/[0.04] text-amber-400";
+                tabJellyfish.className = "mode-tab flex-1 py-1.5 rounded-lg text-xs font-medium tracking-wide text-slate-500 hover:text-slate-300";
+                
+                creatureLabel.textContent = "숲 속 반딧불이";
+                btnCheat.textContent = "테스트 소환";
+                viewLabel.textContent = `Mystic Firefly Forest`;
+                
+                document.body.style.backgroundColor = "#020302";
+                setThemeColor('gold');
+                lightingSection.style.opacity = "0.15";
+                lightingSection.style.pointerEvents = "none";
+            }
+
+            resizeCanvas();
+            renderDisplay();
+        }
+
+        function renderDisplay() {
+            const m = Math.floor(timeLeft / 60);
+            const s = timeLeft % 60;
+            timerDisplay.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+
+            if (currentMode === 'STUDY') {
+                modeBadge.textContent = 'STUDY';
+            } else if (currentMode === 'REVIEW') {
+                modeBadge.textContent = 'REVIEW';
+            } else if (currentMode === 'BREAK') {
+                modeBadge.textContent = 'BREAK';
+            }
+
+            const count = currentEnvironment === 'jellyfish' ? jellyfishes.length : fireflies.length;
+            creatureCountDisplay.textContent = `${count}마리`;
+        }
+
+        window.toggleTimer = function() {
+            if (isRunning) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                isRunning = false;
+                updateStyleWithPreset();
+            } else {
+                isRunning = true;
+                updateStyleWithPreset();
+
+                timerInterval = setInterval(() => {
+                    timeLeft--;
+                    if (timeLeft < 0) {
+                        clearInterval(timerInterval);
+                        timerInterval = null;
+                        isRunning = false;
+                        handleSequenceComplete();
+                    }
+                    renderDisplay();
+                }, 1000);
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            isRunning = false;
+            currentMode = 'STUDY';
+            timeLeft = TIMES.STUDY;
+            updateStyleWithPreset();
+            renderDisplay();
+        }
+
+        function handleSequenceComplete() {
+            try {
+                bellSound.currentTime = 0;
+                bellSound.play();
+            } catch(e) {}
+
+            if (currentMode === 'STUDY') {
+                showToast('Study Session Complete', '30분 공부 완료! 5분 복습 단계를 준비하세요.', '📚');
+                currentMode = 'REVIEW';
+                timeLeft = TIMES.REVIEW;
+            } else if (currentMode === 'REVIEW') {
+                showToast('Review Session Complete', '5분 복습 완료! 5분간 휴식하며 자연을 감상해 보세요.', '📝');
+                currentMode = 'BREAK';
+                timeLeft = TIMES.BREAK;
+            } else if (currentMode === 'BREAK') {
+                completedCycles++;
+                if (currentEnvironment === 'jellyfish') {
+                    spawnJellyfish();
+                    showToast('Routine Cycle Perfect!', '1사이클 완료! 신비한 발광 해파리가 깨어났습니다.', '🪼');
+                } else {
+                    spawnFirefly();
+                    showToast('Routine Cycle Perfect!', '1사이클 완료! 고요한 숲속 반딧불이가 빛나기 시작합니다.', '✨');
+                }
+                currentMode = 'STUDY';
+                timeLeft = TIMES.STUDY;
+            }
+            
+            updateStyleWithPreset();
+            renderDisplay();
+        }
+
+        window.instantCycle = function() {
+            completedCycles++;
+            if (currentEnvironment === 'jellyfish') {
+                spawnJellyfish();
+                showToast('Jellyfish Spawned', '새로운 해파리를 수조 속에 방류했습니다.', '🪼');
+            } else {
+                spawnFirefly();
+                showToast('Firefly Spawned', '밤하늘에 영롱한 반딧불이를 깨웠습니다.', '✨');
+            }
+            renderDisplay();
+        }
+
+
+        // ==========================================
+        //  CANVAS 해파리 & 반딧불이 물리 렌더러
+        // ==========================================
+        const canvas = document.getElementById('aquariumCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let jellyfishes = [];
+        let fireflies = [];
+        let backgroundBubbles = [];
+
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * window.devicePixelRatio;
+            canvas.height = rect.height * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Bubble {
+            constructor() {
+                const w = canvas.width / window.devicePixelRatio;
+                const h = canvas.height / window.devicePixelRatio;
+                this.x = Math.random() * w;
+                this.y = h + Math.random() * 20;
+                this.radius = Math.random() * 1.0 + 0.3;
+                this.speedY = Math.random() * 0.12 + 0.04; 
+            }
+            update() {
+                const w = canvas.width / window.devicePixelRatio;
+                const h = canvas.height / window.devicePixelRatio;
+                this.y -= this.speedY;
+                this.x += Math.sin(this.y * 0.01) * 0.05;
+                if (this.y < -10) {
+                    this.y = h + 10;
+                    this.x = Math.random() * w;
+                }
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                if (currentEnvironment === 'jellyfish') {
+                    ctx.fillStyle = `hsla(${colorPresets[activeColorKey].hue}, 80%, 70%, 0.04)`;
+                } else {
+                    ctx.fillStyle = `rgba(140, 200, 100, 0.03)`;
+                }
+                ctx.fill();
+            }
+        }
+
+        // 극도로 사실적인 해파리 생체 구조 클래스
+        class RealisticJellyfish {
+            constructor() {
+                const w = canvas.width / window.devicePixelRatio;
+                const h = canvas.height / window.devicePixelRatio;
+                
+                this.x = w/2 + (Math.random() - 0.5) * (w - 140);
+                this.y = h/2 + (Math.random() - 0.5) * (h - 220);
+                
+                this.vx = 0;
+                this.vy = -0.15; 
+                
+                this.personality = Math.random() < 0.45 ? 'active' : 'calm';
+                
+                this.radius = this.personality === 'active' 
+                    ? 11 + Math.random() * 2.5 
+                    : 14 + Math.random() * 4.5; 
+                
+                this.speedLimit = this.personality === 'active' ? 0.42 : 0.14;
+                
+                this.pulseTimer = Math.random() * Math.PI * 2;
+                this.pulseDurationSpeed = this.personality === 'active' ? 0.022 : 0.007; 
+                
+                this.angle = -Math.PI / 2 + (Math.random() - 0.5) * 0.18; 
+                this.targetAngle = this.angle;
+                
+                this.domeRatioX = 1.0;
+                this.domeRatioY = 1.0;
+
+                this.hueOffset = (Math.random() - 0.5) * 60; 
+                this.alpha = this.personality === 'active' ? 0.52 + Math.random() * 0.1 : 0.62 + Math.random() * 0.15;
+
+                // 실 촉수
+                this.tentacles = [];
+                const thinTentacleCount = this.personality === 'active' ? 4 : 6;
+                for (let i = 0; i < thinTentacleCount; i++) {
+                    let segments = [];
+                    const length = this.personality === 'active' ? 5 : 7; 
+                    for (let s = 0; s < length; s++) {
+                        segments.push({ x: this.x, y: this.y });
+                    }
+                    this.tentacles.push({ segments });
+                }
+
+                // 구강완 프릴 촉수
+                this.oralArms = [];
+                const armCount = 2;
+                for (let i = 0; i < armCount; i++) {
+                    let segments = [];
+                    const length = this.personality === 'active' ? 4 : 6; 
+                    for (let s = 0; s < length; s++) {
+                        segments.push({ x: this.x, y: this.y });
+                    }
+                    this.oralArms.push(segments);
+                }
+            }
+
+            update(index) {
+                const w = canvas.width / window.devicePixelRatio;
+                const h = canvas.height / window.devicePixelRatio;
+                
+                this.pulseTimer += this.pulseDurationSpeed;
+                
+                const rawPulse = Math.sin(this.pulseTimer);
+                const isContracting = rawPulse > 0.65; 
+
+                if (isContracting) {
+                    this.domeRatioX += (0.75 - this.domeRatioX) * 0.12;
+                    this.domeRatioY += (1.18 - this.domeRatioY) * 0.12;
+
+                    const pushFactor = this.personality === 'active' ? 0.075 : 0.02;
+                    const pushPower = pushFactor + (this.radius * 0.0008);
+                    
+                    this.vx += Math.cos(this.angle) * pushPower;
+                    this.vy += Math.sin(this.angle) * pushPower;
+
+                    if (Math.random() < 0.03) {
+                        this.targetAngle = -Math.PI/2 + (Math.random() - 0.5) * 1.0;
+                    }
+                } else {
+                    this.domeRatioX += (1.05 - this.domeRatioX) * 0.03;
+                    this.domeRatioY += (0.91 - this.domeRatioY) * 0.03;
+                }
+
+                const angleDiff = this.targetAngle - this.angle;
+                this.angle += angleDiff * 0.025;
+
+                this.vx *= 0.92;
+                this.vy *= 0.92;
+                this.vy += this.personality === 'active' ? 0.004 : 0.006;
+
+                // 개체간 거리 분산 유지
+                jellyfishes.forEach((other, oIdx) => {
+                    if (index === oIdx) return;
+                    const dx = this.x - other.x;
+                    const dy = this.y - other.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    const safeDistance = (this.radius + other.radius) * 2.3;
+
+                    if (distance < safeDistance && distance > 0) {
+                        const pushForce = (safeDistance - distance) * 0.0003;
+                        this.vx += (dx / distance) * pushForce;
+                        this.vy += (dy / distance) * pushForce;
+                    }
+                });
+
+                // 벽 바운더리
+                const margin = this.radius + 35;
+                const centerWeight = 0.008; 
+
+                if (this.x < margin) {
+                    this.vx += (margin - this.x) * centerWeight;
+                    this.targetAngle = -Math.PI / 2 + Math.random() * 0.3;
+                } else if (this.x > w - margin) {
+                    this.vx -= (this.x - (w - margin)) * centerWeight;
+                    this.targetAngle = -Math.PI / 2 - Math.random() * 0.3;
+                }
+
+                if (this.y < margin + 15) {
+                    this.vy += (margin + 15 - this.y) * centerWeight * 1.5;
+                    this.targetAngle = Math.PI / 2 + (Math.random() - 0.5) * 0.3;
+                } else if (this.y > h - margin - 20) {
+                    this.vy -= (this.y - (h - margin - 20)) * centerWeight * 1.5;
+                    this.targetAngle = -Math.PI / 2 + (Math.random() - 0.5) * 0.3;
+                }
+
+                const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                if (speed > this.speedLimit) {
+                    this.vx = (this.vx / speed) * this.speedLimit;
+                    this.vy = (this.vy / speed) * this.speedLimit;
+                }
+
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // 촉수 세그먼트 물리 연산
+                this.tentacles.forEach((tentacle, tIdx) => {
+                    const offsetIndex = tIdx - (this.tentacles.length - 1) / 2;
+                    const attachmentAngle = this.angle + Math.PI; 
+                    const spacing = this.radius * 0.22 * this.domeRatioX;
+                    
+                    let targetX = this.x + Math.cos(attachmentAngle) * (this.radius * 0.25) + Math.cos(attachmentAngle + Math.PI/2) * (offsetIndex * spacing);
+                    let targetY = this.y + Math.sin(attachmentAngle) * (this.radius * 0.25) + Math.sin(attachmentAngle + Math.PI/2) * (offsetIndex * spacing);
+
+                    tentacle.segments.forEach((segment, sIdx) => {
+                        if (sIdx === 0) {
+                            segment.x += (targetX - segment.x) * 0.25;
+                            segment.y += (targetY - segment.y) * 0.25;
+                        } else {
+                            const prev = tentacle.segments[sIdx - 1];
+                            const dx = segment.x - prev.x;
+                            const dy = segment.y - prev.y;
+                            const dist = Math.sqrt(dx * dx + dy * dy);
+                            
+                            const optimalDist = 2.4;
+
+                            if (dist > optimalDist) {
+                                const ratio = (dist - optimalDist) / dist;
+                                segment.x -= dx * ratio * 0.85;
+                                segment.y -= dy * ratio * 0.85;
+                            }
+
+                            segment.x -= this.vx * (sIdx * 0.04);
+                            segment.y -= this.vy * (sIdx * 0.04);
+                            segment.y += 0.06;
+
+                            segment.x += Math.sin(this.pulseTimer * 1.5 + sIdx * 0.1) * 0.02;
+                        }
+                    });
+                });
+
+                // 구강완 연산
+                this.oralArms.forEach((arm, aIdx) => {
+                    const offsetIndex = aIdx - (this.oralArms.length - 1) / 2;
+                    const attachmentAngle = this.angle + Math.PI;
+                    const spacing = this.radius * 0.18 * this.domeRatioX;
+
+                    let targetX = this.x + Math.cos(attachmentAngle) * (this.radius * 0.1) + Math.cos(attachmentAngle + Math.PI/2) * (offsetIndex * spacing);
+                    let targetY = this.y + Math.sin(attachmentAngle) * (this.radius * 0.1) + Math.sin(attachmentAngle + Math.PI/2) * (offsetIndex * spacing);
+
+                    arm.forEach((segment, sIdx) => {
+                        if (sIdx === 0) {
+                            segment.x += (targetX - segment.x) * 0.2;
+                            segment.y += (targetY - segment.y) * 0.2;
+                        } else {
+                            const prev = arm[sIdx - 1];
+                            const dx = segment.x - prev.x;
+                            const dy = segment.y - prev.y;
+                            const dist = Math.sqrt(dx * dx + dy * dy);
+                            const optimalDist = 1.8;
+
+                            if (dist > optimalDist) {
+                                const ratio = (dist - optimalDist) / dist;
+                                segment.x -= dx * ratio * 0.75;
+                                segment.y -= dy * ratio * 0.75;
+                            }
+
+                            segment.x -= this.vx * (sIdx * 0.06);
+                            segment.y -= this.vy * (sIdx * 0.06);
+                            segment.y += 0.07;
+
+                            segment.x += Math.sin(this.pulseTimer * 1.0 + sIdx * 0.12) * 0.03;
+                        }
+                    });
+                });
+            }
+
+            draw() {
+                ctx.save();
+
+                const preset = colorPresets[activeColorKey];
+                const dynamicHue = (preset.hue + this.hueOffset + 360) % 360;
+
+                // 1. 긴 실모양 외곽 촉수 그리기
+                this.tentacles.forEach((tentacle) => {
+                    ctx.beginPath();
+                    ctx.moveTo(tentacle.segments[0].x, tentacle.segments[0].y);
+                    for (let i = 1; i < tentacle.segments.length; i++) {
+                        ctx.lineTo(tentacle.segments[i].x, tentacle.segments[i].y);
+                    }
+                    ctx.strokeStyle = `hsla(${dynamicHue}, 80%, 75%, ${this.alpha * 0.18})`;
+                    ctx.lineWidth = 0.5;
+                    ctx.stroke();
+                });
+
+                // 2. 주름진 중앙 구강완 그리기
+                this.oralArms.forEach((arm) => {
+                    ctx.beginPath();
+                    ctx.moveTo(arm[0].x, arm[0].y);
+                    for (let i = 1; i < arm.length; i++) {
+                        ctx.lineTo(arm[i].x, arm[i].y);
+                    }
+                    ctx.strokeStyle = `hsla(${dynamicHue - 15}, 90%, 82%, ${this.alpha * 0.32})`;
+                    ctx.lineWidth = 1.6;
+                    ctx.lineCap = 'round';
+                    ctx.stroke();
+                });
+
+                // 3. 해파리 머리 좌표 변환 및 각도 회전
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle + Math.PI / 2);
+
+                ctx.shadowBlur = this.personality === 'active' ? 12 : 18;
+                ctx.shadowColor = `hsla(${dynamicHue}, 100%, 72%, 0.45)`;
+
+                // 돔 하단 우아한 프릴 주름 (Scalloped Margin)
+                ctx.beginPath();
+                ctx.ellipse(0, 0, this.radius * this.domeRatioX, this.radius * 0.82 * this.domeRatioY, 0, Math.PI, 0, false);
+                
+                const lobes = 8;
+                const rX = this.radius * this.domeRatioX;
+                const rY = 4.5 * this.domeRatioY;
+                for (let i = 0; i <= lobes; i++) {
+                    const ratio = i / lobes;
+                    const targetX = rX - (ratio * rX * 2);
+                    const waveY = Math.abs(Math.sin(ratio * Math.PI * lobes)) * 1.5 * this.domeRatioY;
+                    const targetY = rY - waveY;
+                    ctx.quadraticCurveTo(targetX + (rX / lobes), rY + waveY, targetX, targetY);
+                }
+                
+                // 순수 보석 발광 그라데이션
+                const domeGrad = ctx.createRadialGradient(0, -this.radius * 0.15, 0, 0, 0, this.radius * this.domeRatioX);
+                domeGrad.addColorStop(0, `hsla(${dynamicHue}, 95%, 90%, ${this.alpha * 0.90})`);
+                domeGrad.addColorStop(0.45, `hsla(${dynamicHue + 10}, 90%, 68%, ${this.alpha * 0.40})`);
+                domeGrad.addColorStop(1, `hsla(${dynamicHue - 10}, 100%, 45%, 0)`);
+
+                ctx.fillStyle = domeGrad;
+                ctx.fill();
+
+                // 반투명 클로버형 내장 생체기관 (Gonads) - 투명한 무광 연출
+                const organRad = this.radius * 0.28 * this.domeRatioX;
+                ctx.fillStyle = `hsla(${dynamicHue - 5}, 100%, 88%, ${this.alpha * 0.28})`;
+                for (let j = 0; j < 4; j++) {
+                    const organAng = (j * Math.PI) / 2 + Math.PI / 4;
+                    const ox = Math.cos(organAng) * (organRad * 0.35);
+                    const oy = Math.sin(organAng) * (organRad * 0.35) - (this.radius * 0.15 * this.domeRatioY);
+                    ctx.beginPath();
+                    ctx.arc(ox, oy, organRad * 0.42, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // 방사상 격막 구조선 (Radial Rib Lines) - 은근하고 세밀하게 투영
+                ctx.strokeStyle = `hsla(${dynamicHue}, 100%, 95%, 0.14)`;
+                ctx.lineWidth = 0.45;
+                const ribSteps = 5;
+                for (let i = 1; i < ribSteps; i++) {
+                    const ratio = i / ribSteps;
+                    const radX = this.radius * this.domeRatioX * Math.sin(ratio * Math.PI);
+                    const radY = -this.radius * 0.82 * this.domeRatioY * Math.cos(ratio * Math.PI);
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(0, -this.radius * 0.35 * this.domeRatioY);
+                    ctx.quadraticCurveTo(radX * 0.28, radY * 0.28, radX, radY);
+                    ctx.stroke();
+                }
+
+                ctx.restore();
+            }
+        }
+
+        // 극도로 정교해진 유기적 광선식 반딧불이 클래스
+        class DetailedFirefly {
+            constructor() {
+                const w = canvas.width / window.devicePixelRatio;
+                const h = canvas.height / window.devicePixelRatio;
+                
+                this.x = Math.random() * w;
+                this.y = Math.random() * h;
+                
+                this.vx = (Math.random() - 0.5) * 0.25;
+                this.vy = (Math.random() - 0.5) * 0.25;
+                
+                this.personality = Math.random() < 0.5 ? 'calm' : 'wandering';
+                // 더욱 작고 세련된 날개 크기
+                this.radius = 1.0 + Math.random() * 0.6;
+                
+                this.angle = Math.random() * Math.PI * 2;
+                
+                // 실제 반딧불이 명멸 주기 (비대칭형 충전-감쇠 공식)
+                this.blinkTimer = Math.random() * Math.PI * 2;
+                this.blinkSpeed = 0.015 + Math.random() * 0.015; 
+                
+                // 따뜻한 오라 황록색/황금색 톤
+                this.baseHue = 52 + Math.random() * 18; 
+                this.alpha = 0; 
+                this.fadeRate = 0.02;
+                this.maxAlpha = 0.7 + Math.random() * 0.2;
+            }
+
+            update(index) {
+                const w = canvas.width / window.devicePixelRatio;
+                const h = canvas.height / window.devicePixelRatio;
+                
+                this.blinkTimer += this.blinkSpeed;
+                
+                if (this.personality === 'wandering') {
+                    this.angle += (Math.random() - 0.5) * 0.15;
+                    const speed = 0.18 + Math.sin(this.blinkTimer) * 0.05;
+                    this.vx = Math.cos(this.angle) * speed;
+                    this.vy = Math.sin(this.angle) * speed;
+                } else {
+                    this.angle += (Math.random() - 0.5) * 0.05;
+                    this.vx = Math.cos(this.angle) * 0.05;
+                    this.vy = Math.sin(this.angle) * 0.05 - 0.012; 
+                }
+
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // 서로 반발하며 분산
+                fireflies.forEach((other, oIdx) => {
+                    if (index === oIdx) return;
+                    const dx = this.x - other.x;
+                    const dy = this.y - other.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    const safeSpace = 40;
+
+                    if (dist < safeSpace && dist > 0) {
+                        const repel = (safeSpace - dist) * 0.0006;
+                        this.vx += (dx / dist) * repel;
+                        this.vy += (dy / dist) * repel;
+                    }
+                });
+
+                // 테두리 반사 제어
+                const margin = 15;
+                if (this.x < margin) { this.x = margin; this.angle = 0; }
+                if (this.x > w - margin) { this.x = w - margin; this.angle = Math.PI; }
+                if (this.y < margin) { this.y = margin; this.angle = Math.PI / 2; }
+                if (this.y > h - margin) { this.y = h - margin; this.angle = -Math.PI / 2; }
+
+                if (this.alpha < this.maxAlpha) {
+                    this.alpha += this.fadeRate;
+                }
+            }
+
+            draw() {
+                // 비대칭 실제 생체 전기 깜빡임 유도 (급격히 올라갔다 스르르 사라지는 유체 광도)
+                const rawSine = Math.sin(this.blinkTimer);
+                // 지수 승수를 사용하여 실제 전기 점등처럼 연출
+                const pulse = Math.pow(Math.max(0, rawSine * 0.8 + 0.25), 2.5); 
+                const currentAlpha = this.alpha * pulse;
+
+                if (currentAlpha > 0.01) {
+                    ctx.save();
+                    
+                    // [해결안 1]: 실제 빛 방출 효과 모방을 위한 Canvas 'screen' 블렌드 합성 모드 전환
+                    ctx.globalCompositeOperation = 'screen';
+
+                    // 실제 불빛 크기 축소 스케일
+                    const glowRadius = this.radius * (4.0 + pulse * 6);
+                    
+                    const flyAngle = Math.atan2(this.vy, this.vx);
+                    const glowOffsetX = -Math.cos(flyAngle) * (this.radius * 0.8);
+                    const glowOffsetY = -Math.sin(flyAngle) * (this.radius * 0.8);
+
+                    // [해결안 2]: 실제 빛의 감쇄 역자승 법칙을 시각적으로 모방하는 정밀한 다층 그라데이션
+                    const grad = ctx.createRadialGradient(
+                        this.x + glowOffsetX, this.y + glowOffsetY, 0, 
+                        this.x + glowOffsetX, this.y + glowOffsetY, glowRadius
+                    );
+                    
+                    // 1) 고밀도 백색 에너지 코어 (실제 램프 필라멘트 효과)
+                    grad.addColorStop(0, `hsla(${this.baseHue}, 100%, 97%, ${currentAlpha * 0.95})`);
+                    // 2) 네온 황록색 고압 광륜 (Halo)
+                    grad.addColorStop(0.2, `hsla(${this.baseHue + 4}, 100%, 75%, ${currentAlpha * 0.7})`);
+                    // 3) 아늑하고 따뜻한 산란 금빛 (Warm Spread)
+                    grad.addColorStop(0.5, `hsla(${this.baseHue - 8}, 100%, 55%, ${currentAlpha * 0.3})`);
+                    // 4) 주변 대기 수렴 경계
+                    grad.addColorStop(1, `hsla(${this.baseHue - 15}, 100%, 45%, 0)`);
+                    
+                    ctx.beginPath();
+                    ctx.arc(this.x + glowOffsetX, this.y + glowOffsetY, glowRadius, 0, Math.PI * 2);
+                    ctx.fillStyle = grad;
+                    ctx.fill();
+
+                    // 블렌딩 모드를 일반으로 원위치한 후 작고 어두운 몸통 렌더링
+                    ctx.globalCompositeOperation = 'source-over';
+                    ctx.translate(this.x, this.y);
+                    ctx.rotate(flyAngle);
+
+                    // 앞가슴 (Thorax - 미세 적색 포인트)
+                    ctx.beginPath();
+                    ctx.arc(this.radius * 0.4, 0, this.radius * 0.35, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(130, 25, 15, 0.7)'; 
+                    ctx.fill();
+
+                    // 날개깃 (Elytra - 어두운 갈색 등갑)
+                    ctx.beginPath();
+                    ctx.ellipse(-this.radius * 0.25, 0, this.radius * 0.85, this.radius * 0.42, 0, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(20, 20, 18, 0.85)'; 
+                    ctx.fill();
+
+                    ctx.restore();
+                }
+            }
+        }
+
+        function spawnJellyfish() {
+            jellyfishes.push(new RealisticJellyfish());
+        }
+
+        function spawnFirefly() {
+            fireflies.push(new DetailedFirefly());
+        }
+
+        // 잔잔한 부유 기포 깔아두기
+        for(let i=0; i<18; i++) {
+            backgroundBubbles.push(new Bubble());
+        }
+
+        function animate() {
+            const w = canvas.width / window.devicePixelRatio;
+            const h = canvas.height / window.devicePixelRatio;
+
+            if (currentEnvironment === 'jellyfish') {
+                ctx.fillStyle = 'rgba(1, 1, 3, 0.12)';
+            } else {
+                ctx.fillStyle = 'rgba(1, 2, 1, 0.15)'; 
+            }
+            ctx.fillRect(0, 0, w, h);
+
+            backgroundBubbles.forEach(b => {
+                b.update();
+                b.draw();
+            });
+
+            if (currentEnvironment === 'jellyfish') {
+                jellyfishes.forEach((j, idx) => {
+                    j.update(idx);
+                    j.draw();
+                });
+            } else {
+                fireflies.forEach((f, idx) => {
+                    f.update(idx);
+                    f.draw();
+                });
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        window.onload = function() {
+            animate();
+            renderDisplay();
+            updateStyleWithPreset();
+        }
+    </script>
+</body>
+</html>
+
+```
+
+```html
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep Sea & Firefly Minimalist Timer</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;1,100&family=Noto+Sans+KR:wght@300;400;500&display=swap');
+        
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #010103;
+            transition: background-color 2.5s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        
+        .timer-font {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 100;
+        }
+
+        /* 공간 음영용 실시간 글로우 백라이트 */
+        .aquarium-backlight {
+            filter: blur(150px);
+            opacity: 0.12;
+            transition: background 2.5s ease-in-out;
+            pointer-events: none;
+        }
+
+        /* 라이팅/모드 칩 인터랙티브 */
+        .color-dot, .mode-tab {
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .color-dot:hover {
+            transform: scale(1.15);
+        }
+    </style>
+</head>
+<body class="text-slate-400 min-h-screen flex flex-col items-center justify-center p-4 select-none overflow-hidden relative">
+
+    <!-- 공간 백라이트 싱크 -->
+    <div id="backlight" class="absolute w-[500px] h-[500px] rounded-full aquarium-backlight z-0 top-[35%] left-[50%] -translate-x-1/2 -translate-y-1/2 bg-cyan-500"></div>
+
+    <div class="w-full max-w-4xl flex flex-col lg:flex-row items-center justify-center gap-10 lg:gap-16 z-10">
+        
+        <!-- 왼쪽: 캔버스 기반 인터랙티브 자연 수조/숲 뷰어 -->
+        <div id="canvas-container" class="relative w-full max-w-[380px] aspect-[4/5] bg-[#020203] rounded-[32px] border border-white/[0.02] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.98)] overflow-hidden">
+            <div id="glass-lens" class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.003] to-white/[0.015] pointer-events-none z-10"></div>
+            
+            <canvas id="aquariumCanvas" class="absolute inset-0 w-full h-full z-0 block"></canvas>
+            
+            <div id="view-label" class="absolute bottom-6 left-6 z-10 text-[8px] text-white/10 font-light tracking-[0.3em] uppercase pointer-events-none">
+                Bioluminescent Sanctuary
+            </div>
+            
+            <div id="tank-top-glow" class="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-cyan-500/15 to-transparent transition-all duration-1000"></div>
+        </div>
+
+        <!-- 오른쪽: 초간결 미니멀 공부 대시보드 -->
+        <div class="w-full max-w-[300px] flex flex-col items-center lg:items-start text-center lg:text-left">
+            
+            <!-- 환경 전환 탭 -->
+            <div class="flex bg-white/[0.02] border border-white/[0.04] p-1 rounded-xl mb-6 w-full">
+                <button onclick="switchEnvironment('jellyfish')" id="tab-jellyfish" class="mode-tab flex-1 py-2 rounded-lg text-xs font-medium tracking-wide bg-white/[0.05] text-cyan-400">
+                    심해 해파리
+                </button>
+                <button onclick="switchEnvironment('firefly')" id="tab-firefly" class="mode-tab flex-1 py-2 rounded-lg text-xs font-medium tracking-wide text-slate-500 hover:text-slate-300">
+                    반딧불이 숲
+                </button>
+            </div>
+
+            <!-- 현재 집중 모드 인디케이터 배지 -->
+            <div class="flex items-center mb-1">
+                <div id="mode-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-medium tracking-wider bg-cyan-500/10 text-cyan-400 border border-cyan-500/15 transition-all duration-500 uppercase">
+                    STUDYING
+                </div>
+            </div>
+
+            <!-- 초대형 얇은 미니멀 타이머 디스플레이 -->
+            <div id="timer-display" class="timer-font text-7xl md:text-8xl tracking-tighter text-slate-100 leading-none">
+                30:00
+            </div>
+
+            <!-- 수조 조명 컨트롤러 -->
+            <div id="lighting-section" class="w-full mt-6 flex flex-col items-center lg:items-start gap-2.5 transition-opacity duration-500">
+                <span class="text-[10px] text-slate-500 tracking-wider">LIGHTING</span>
+                <div class="flex items-center gap-3">
+                    <button onclick="setThemeColor('cyan')" class="color-dot w-8 h-8 rounded-full bg-cyan-500 border-2 border-white/20 active:scale-95 shadow-[0_0_12px_rgba(6,182,212,0.3)]" title="아쿠아 시안" style="border-color: rgba(255, 255, 255, 0.6);"></button>
+                    <button onclick="setThemeColor('magenta')" class="color-dot w-8 h-8 rounded-full bg-pink-500 border-2 border-transparent active:scale-95" title="마젠타 핑크"></button>
+                    <button onclick="setThemeColor('emerald')" class="color-dot w-8 h-8 rounded-full bg-emerald-500 border-2 border-transparent active:scale-95" title="에메랄드 그린"></button>
+                    <button onclick="setThemeColor('purple')" class="color-dot w-8 h-8 rounded-full bg-purple-600 border-2 border-transparent active:scale-95" title="미스틱 퍼플"></button>
+                    <button onclick="setThemeColor('gold')" class="color-dot w-8 h-8 rounded-full bg-amber-400 border-2 border-transparent active:scale-95" title="오라 골드"></button>
+                </div>
+            </div>
+
+            <!-- 생명체 소환 카운터 -->
+            <div class="mt-6 w-full flex items-center justify-between border-t border-white/5 pt-5 text-xs text-slate-500 font-light">
+                <span id="creature-label">수조 속 해파리</span>
+                <span id="creature-count" class="font-normal text-cyan-400 bg-cyan-500/5 px-2 py-0.5 rounded text-[11px] font-semibold border border-cyan-500/10">0마리</span>
+            </div>
+
+            <!-- 미니멀 얇은 컨트롤 버튼 배열 -->
+            <div class="flex flex-col gap-2 w-full mt-8">
+                <div class="flex items-center gap-2 w-full">
+                    <button id="btn-toggle" onclick="toggleTimer()" class="flex-[2] py-3.5 px-5 rounded-xl font-medium text-xs bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition-all shadow-md shadow-cyan-500/5 active:scale-[0.98]">
+                        시작
+                    </button>
+                    <button onclick="resetTimer()" class="flex-1 py-3.5 px-5 rounded-xl font-medium text-xs bg-[#0b0c13] hover:bg-[#12141f] text-slate-300 border border-white/5 transition-all active:scale-[0.98]">
+                        리셋
+                    </button>
+                </div>
+                <!-- 무소음 즉시 방류 (테스트용) -->
+                <button onclick="instantCycle()" class="py-2.5 px-4 rounded-lg font-light text-[10px] bg-[#030306]/50 hover:bg-white/[0.02] border border-white/[0.02] text-slate-600 hover:text-slate-400 transition-all" id="btn-cheat">
+                    테스트 소환
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 미니멀 알림용 토스트 -->
+    <div id="alarm-toast" class="fixed bottom-6 right-6 z-50 transform translate-y-12 opacity-0 pointer-events-none transition-all duration-500 bg-slate-950/95 backdrop-blur-md border border-white/5 px-5 py-3.5 rounded-xl shadow-2xl flex items-center gap-3 text-xs">
+        <span id="toast-icon">🔔</span>
+        <div class="flex flex-col">
+            <span class="font-semibold text-slate-200" id="toast-title">STATUS</span>
+            <span class="text-[10px] text-slate-400 mt-0.5" id="toast-message">시간이 완료되었습니다.</span>
+        </div>
+    </div>
+
+    <!-- 알림 소리 -->
+    <audio id="bell-sound" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-120.wav" preload="auto"></audio>
+
+    <script>
+        const TIMES = {
+            STUDY: 30 * 60,
+            REVIEW: 5 * 60,
+            BREAK: 5 * 60
+        };
+
+        let currentMode = 'STUDY'; 
+        let timeLeft = TIMES.STUDY;
+        let timerInterval = null;
+        let isRunning = false;
+        let completedCycles = 0;
+        
+        let currentEnvironment = 'jellyfish';
+
+        const colorPresets = {
+            cyan: {
+                hue: 195,
+                btnColor: '#06b6d4',
+                badgeText: 'text-cyan-400',
+                badgeBg: 'bg-cyan-500/10',
+                badgeBorder: 'border-cyan-500/15'
+            },
+            magenta: {
+                hue: 325,
+                btnColor: '#ec4899',
+                badgeText: 'text-pink-400',
+                badgeBg: 'bg-pink-500/10',
+                badgeBorder: 'border-pink-500/15'
+            },
+            emerald: {
+                hue: 150,
+                btnColor: '#10b981',
+                badgeText: 'text-emerald-400',
+                badgeBg: 'bg-emerald-500/10',
+                badgeBorder: 'border-emerald-500/15'
+            },
+            purple: {
+                hue: 275,
+                btnColor: '#9333ea',
+                badgeText: 'text-purple-400',
+                badgeBg: 'bg-purple-500/10',
+                badgeBorder: 'border-purple-500/15'
+            },
+            gold: {
+                hue: 38,
+                btnColor: '#f59e0b',
+                badgeText: 'text-amber-400',
+                badgeBg: 'bg-amber-500/10',
+                badgeBorder: 'border-amber-500/15'
+            }
+        };
+
+        let activeColorKey = 'cyan';
+
+        const timerDisplay = document.getElementById('timer-display');
+        const modeBadge = document.getElementById('mode-badge');
+        const creatureCountDisplay = document.getElementById('creature-count');
+        const btnToggle = document.getElementById('btn-toggle');
+        const bellSound = document.getElementById('bell-sound');
+        const backlight = document.getElementById('backlight');
+        const tankTopGlow = document.getElementById('tank-top-glow');
+        const viewLabel = document.getElementById('view-label');
+        const canvasContainer = document.getElementById('canvas-container');
+
+        const creatureLabel = document.getElementById('creature-label');
+        const btnCheat = document.getElementById('btn-cheat');
+        const lightingSection = document.getElementById('lighting-section');
+
+        const alarmToast = document.getElementById('alarm-toast');
+        const toastTitle = document.getElementById('toast-title');
+        const toastMessage = document.getElementById('toast-message');
+        const toastIcon = document.getElementById('toast-icon');
+        let toastTimeout = null;
+
+        function showToast(title, msg, icon) {
+            toastTitle.textContent = title;
+            toastMessage.textContent = msg;
+            toastIcon.textContent = icon;
+            alarmToast.classList.remove('translate-y-12', 'opacity-0', 'pointer-events-none');
+            
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(closeToast, 6000);
+        }
+
+        window.closeToast = function() {
+            alarmToast.classList.add('translate-y-12', 'opacity-0', 'pointer-events-none');
+        }
+
+        window.setThemeColor = function(colorName) {
+            activeColorKey = colorName;
+            const preset = colorPresets[colorName];
+            
+            backlight.style.background = preset.btnColor;
+            tankTopGlow.style.background = `linear-gradient(to right, transparent, ${preset.btnColor}26, transparent)`;
+            
+            const buttons = document.querySelectorAll('.color-dot');
+            buttons.forEach(btn => {
+                btn.style.borderColor = 'transparent';
+                btn.style.boxShadow = 'none';
+            });
+            
+            if (event && event.target && event.target.classList.contains('color-dot')) {
+                event.target.style.borderColor = 'rgba(255, 255, 255, 0.6)';
+                event.target.style.boxShadow = `0 0 14px ${preset.btnColor}`;
+            }
+            
+            updateStyleWithPreset();
+            renderDisplay();
+        }
+
+        function updateStyleWithPreset() {
+            const preset = colorPresets[activeColorKey];
+            modeBadge.className = `px-2.5 py-0.5 rounded-full text-[10px] font-medium tracking-wider ${preset.badgeBg} ${preset.badgeText} ${preset.badgeBorder} transition-all duration-500 uppercase`;
+            creatureCountDisplay.className = `font-normal ${preset.badgeText} ${preset.badgeBg} px-2.5 py-1 rounded text-[11px] font-semibold border ${preset.badgeBorder}`;
+            
+            if (isRunning) {
+                btnToggle.style.backgroundColor = '#0b0c13';
+                btnToggle.style.color = '#cbd5e1';
+                btnToggle.style.borderColor = '#1e293b';
+                btnToggle.style.boxShadow = 'none';
+                btnToggle.textContent = '일시 정지';
+            } else {
+                btnToggle.style.backgroundColor = preset.btnColor;
+                btnToggle.style.color = '#010103';
+                btnToggle.style.borderColor = 'transparent';
+                btnToggle.style.boxShadow = `0 8px 20px -3px ${preset.btnColor}15`;
+                btnToggle.textContent = '시작';
+            }
+        }
+
+        window.switchEnvironment = function(envName) {
+            if (currentEnvironment === envName) return;
+            currentEnvironment = envName;
+
+            const tabJellyfish = document.getElementById('tab-jellyfish');
+            const tabFirefly = document.getElementById('tab-firefly');
+
+            if (currentEnvironment === 'jellyfish') {
+                tabJellyfish.className = "mode-tab flex-1 py-1.5 rounded-lg text-xs font-medium tracking-wide bg-white/[0.04] text-cyan-400";
+                tabFirefly.className = "mode-tab flex-1 py-1.5 rounded-lg text-xs font-medium tracking-wide text-slate-500 hover:text-slate-300";
+                
+                creatureLabel.textContent = "수조 속 해파리";
+                btnCheat.textContent = "테스트 소환";
+                viewLabel.textContent = `Bioluminescent Sanctuary`;
+                lightingSection.style.opacity = "1";
+                lightingSection.style.pointerEvents = "auto";
+                
+                document.body.style.backgroundColor = "#010103";
+                setThemeColor('cyan');
+
+            } else {
+                tabFirefly.className = "mode-tab flex-1 py-1.5 rounded-lg text-xs font-medium tracking-wide bg-white/[0.04] text-amber-400";
+                tabJellyfish.className = "mode-tab flex-1 py-1.5 rounded-lg text-xs font-medium tracking-wide text-slate-500 hover:text-slate-300";
+                
+                creatureLabel.textContent = "숲 속 반딧불이";
+                btnCheat.textContent = "테스트 소환";
+                viewLabel.textContent = `Mystic Firefly Forest`;
+                
+                document.body.style.backgroundColor = "#020302";
+                setThemeColor('gold');
+                lightingSection.style.opacity = "0.15";
+                lightingSection.style.pointerEvents = "none";
+            }
+
+            resizeCanvas();
+            renderDisplay();
+        }
+
+        function renderDisplay() {
+            const m = Math.floor(timeLeft / 60);
+            const s = timeLeft % 60;
+            timerDisplay.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+
+            if (currentMode === 'STUDY') {
+                modeBadge.textContent = 'STUDY';
+            } else if (currentMode === 'REVIEW') {
+                modeBadge.textContent = 'REVIEW';
+            } else if (currentMode === 'BREAK') {
+                modeBadge.textContent = 'BREAK';
+            }
+
+            const count = currentEnvironment === 'jellyfish' ? jellyfishes.length : fireflies.length;
+            creatureCountDisplay.textContent = `${count}마리`;
+        }
+
+        window.toggleTimer = function() {
+            if (isRunning) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                isRunning = false;
+                updateStyleWithPreset();
+            } else {
+                isRunning = true;
+                updateStyleWithPreset();
+
+                timerInterval = setInterval(() => {
+                    timeLeft--;
+                    if (timeLeft < 0) {
+                        clearInterval(timerInterval);
+                        timerInterval = null;
+                        isRunning = false;
+                        handleSequenceComplete();
+                    }
+                    renderDisplay();
+                }, 1000);
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            isRunning = false;
+            currentMode = 'STUDY';
+            timeLeft = TIMES.STUDY;
+            updateStyleWithPreset();
+            renderDisplay();
+        }
+
+        function handleSequenceComplete() {
+            try {
+                bellSound.currentTime = 0;
+                bellSound.play();
+            } catch(e) {}
+
+            if (currentMode === 'STUDY') {
+                showToast('Study Session Complete', '30분 공부 완료! 5분 복습 단계를 준비하세요.', '📚');
+                currentMode = 'REVIEW';
+                timeLeft = TIMES.REVIEW;
+            } else if (currentMode === 'REVIEW') {
+                showToast('Review Session Complete', '5분 복습 완료! 5분간 휴식하며 자연을 감상해 보세요.', '📝');
+                currentMode = 'BREAK';
+                timeLeft = TIMES.BREAK;
+            } else if (currentMode === 'BREAK') {
+                completedCycles++;
+                if (currentEnvironment === 'jellyfish') {
+                    spawnJellyfish();
+                    showToast('Routine Cycle Perfect!', '1사이클 완료! 신비한 발광 해파리가 깨어났습니다.', '🪼');
+                } else {
+                    spawnFirefly();
+                    showToast('Routine Cycle Perfect!', '1사이클 완료! 고요한 숲속 반딧불이가 빛나기 시작합니다.', '✨');
+                }
+                currentMode = 'STUDY';
+                timeLeft = TIMES.STUDY;
+            }
+            
+            updateStyleWithPreset();
+            renderDisplay();
+        }
+
+        window.instantCycle = function() {
+            completedCycles++;
+            if (currentEnvironment === 'jellyfish') {
+                spawnJellyfish();
+                showToast('Jellyfish Spawned', '새로운 해파리를 수조 속에 방류했습니다.', '🪼');
+            } else {
+                spawnFirefly();
+                showToast('Firefly Spawned', '밤하늘에 영롱한 반딧불이를 깨웠습니다.', '✨');
+            }
+            renderDisplay();
+        }
+
+
+        // ==========================================
+        //  CANVAS 해파리 & 반딧불이 물리 렌더러
+        // ==========================================
+        const canvas = document.getElementById('aquariumCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let jellyfishes = [];
+        let fireflies = [];
+        let backgroundBubbles = [];
+
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * window.devicePixelRatio;
+            canvas.height = rect.height * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Bubble {
+            constructor() {
+                const w = canvas.width / window.devicePixelRatio;
+                const h = canvas.height / window.devicePixelRatio;
+                this.x = Math.random() * w;
+                this.y = h + Math.random() * 20;
+                this.radius = Math.random() * 1.0 + 0.3;
+                this.speedY = Math.random() * 0.12 + 0.04; 
+            }
+            update() {
+                const w = canvas.width / window.devicePixelRatio;
+                const h = canvas.height / window.devicePixelRatio;
+                this.y -= this.speedY;
+                this.x += Math.sin(this.y * 0.01) * 0.05;
+                if (this.y < -10) {
+                    this.y = h + 10;
+                    this.x = Math.random() * w;
+                }
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                if (currentEnvironment === 'jellyfish') {
+                    ctx.fillStyle = `hsla(${colorPresets[activeColorKey].hue}, 80%, 70%, 0.04)`;
+                } else {
+                    ctx.fillStyle = `rgba(140, 200, 100, 0.03)`;
+                }
+                ctx.fill();
+            }
+        }
+
+        // 극도로 사실적인 해파리 생체 구조 클래스
+        class RealisticJellyfish {
+            constructor() {
+                const w = canvas.width / window.devicePixelRatio;
+                const h = canvas.height / window.devicePixelRatio;
+                
+                this.x = w/2 + (Math.random() - 0.5) * (w - 140);
+                this.y = h/2 + (Math.random() - 0.5) * (h - 220);
+                
+                this.vx = 0;
+                this.vy = -0.15; 
+                
+                this.personality = Math.random() < 0.45 ? 'active' : 'calm';
+                
+                this.radius = this.personality === 'active' 
+                    ? 11 + Math.random() * 2.5 
+                    : 14 + Math.random() * 4.5; 
+                
+                this.speedLimit = this.personality === 'active' ? 0.42 : 0.14;
+                
+                this.pulseTimer = Math.random() * Math.PI * 2;
+                this.pulseDurationSpeed = this.personality === 'active' ? 0.022 : 0.007; 
+                
+                this.angle = -Math.PI / 2 + (Math.random() - 0.5) * 0.18; 
+                this.targetAngle = this.angle;
+                
+                this.domeRatioX = 1.0;
+                this.domeRatioY = 1.0;
+
+                this.hueOffset = (Math.random() - 0.5) * 60; 
+                this.alpha = this.personality === 'active' ? 0.52 + Math.random() * 0.1 : 0.62 + Math.random() * 0.15;
+
+                // 실 촉수
+                this.tentacles = [];
+                const thinTentacleCount = this.personality === 'active' ? 4 : 6;
+                for (let i = 0; i < thinTentacleCount; i++) {
+                    let segments = [];
+                    const length = this.personality === 'active' ? 5 : 7; 
+                    for (let s = 0; s < length; s++) {
+                        segments.push({ x: this.x, y: this.y });
+                    }
+                    this.tentacles.push({ segments });
+                }
+
+                // 구강완 프릴 촉수
+                this.oralArms = [];
+                const armCount = 2;
+                for (let i = 0; i < armCount; i++) {
+                    let segments = [];
+                    const length = this.personality === 'active' ? 4 : 6; 
+                    for (let s = 0; s < length; s++) {
+                        segments.push({ x: this.x, y: this.y });
+                    }
+                    this.oralArms.push(segments);
+                }
+            }
+
+            update(index) {
+                const w = canvas.width / window.devicePixelRatio;
+                const h = canvas.height / window.devicePixelRatio;
+                
+                this.pulseTimer += this.pulseDurationSpeed;
+                
+                const rawPulse = Math.sin(this.pulseTimer);
+                const isContracting = rawPulse > 0.65; 
+
+                if (isContracting) {
+                    this.domeRatioX += (0.75 - this.domeRatioX) * 0.12;
+                    this.domeRatioY += (1.18 - this.domeRatioY) * 0.12;
+
+                    const pushFactor = this.personality === 'active' ? 0.075 : 0.02;
+                    const pushPower = pushFactor + (this.radius * 0.0008);
+                    
+                    this.vx += Math.cos(this.angle) * pushPower;
+                    this.vy += Math.sin(this.angle) * pushPower;
+
+                    if (Math.random() < 0.03) {
+                        this.targetAngle = -Math.PI/2 + (Math.random() - 0.5) * 1.0;
+                    }
+                } else {
+                    this.domeRatioX += (1.05 - this.domeRatioX) * 0.03;
+                    this.domeRatioY += (0.91 - this.domeRatioY) * 0.03;
+                }
+
+                const angleDiff = this.targetAngle - this.angle;
+                this.angle += angleDiff * 0.025;
+
+                this.vx *= 0.92;
+                this.vy *= 0.92;
+                this.vy += this.personality === 'active' ? 0.004 : 0.006;
+
+                // 개체간 거리 분산 유지
+                jellyfishes.forEach((other, oIdx) => {
+                    if (index === oIdx) return;
+                    const dx = this.x - other.x;
+                    const dy = this.y - other.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    const safeDistance = (this.radius + other.radius) * 2.3;
+
+                    if (distance < safeDistance && distance > 0) {
+                        const pushForce = (safeDistance - distance) * 0.0003;
+                        this.vx += (dx / distance) * pushForce;
+                        this.vy += (dy / distance) * pushForce;
+                    }
+                });
+
+                // 벽 바운더리
+                const margin = this.radius + 35;
+                const centerWeight = 0.008; 
+
+                if (this.x < margin) {
+                    this.vx += (margin - this.x) * centerWeight;
+                    this.targetAngle = -Math.PI / 2 + Math.random() * 0.3;
+                } else if (this.x > w - margin) {
+                    this.vx -= (this.x - (w - margin)) * centerWeight;
+                    this.targetAngle = -Math.PI / 2 - Math.random() * 0.3;
+                }
+
+                if (this.y < margin + 15) {
+                    this.vy += (margin + 15 - this.y) * centerWeight * 1.5;
+                    this.targetAngle = Math.PI / 2 + (Math.random() - 0.5) * 0.3;
+                } else if (this.y > h - margin - 20) {
+                    this.vy -= (this.y - (h - margin - 20)) * centerWeight * 1.5;
+                    this.targetAngle = -Math.PI / 2 + (Math.random() - 0.5) * 0.3;
+                }
+
+                const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                if (speed > this.speedLimit) {
+                    this.vx = (this.vx / speed) * this.speedLimit;
+                    this.vy = (this.vy / speed) * this.speedLimit;
+                }
+
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // 촉수 세그먼트 물리 연산
+                this.tentacles.forEach((tentacle, tIdx) => {
+                    const offsetIndex = tIdx - (this.tentacles.length - 1) / 2;
+                    const attachmentAngle = this.angle + Math.PI; 
+                    const spacing = this.radius * 0.22 * this.domeRatioX;
+                    
+                    let targetX = this.x + Math.cos(attachmentAngle) * (this.radius * 0.25) + Math.cos(attachmentAngle + Math.PI/2) * (offsetIndex * spacing);
+                    let targetY = this.y + Math.sin(attachmentAngle) * (this.radius * 0.25) + Math.sin(attachmentAngle + Math.PI/2) * (offsetIndex * spacing);
+
+                    tentacle.segments.forEach((segment, sIdx) => {
+                        if (sIdx === 0) {
+                            segment.x += (targetX - segment.x) * 0.25;
+                            segment.y += (targetY - segment.y) * 0.25;
+                        } else {
+                            const prev = tentacle.segments[sIdx - 1];
+                            const dx = segment.x - prev.x;
+                            const dy = segment.y - prev.y;
+                            const dist = Math.sqrt(dx * dx + dy * dy);
+                            
+                            const optimalDist = 2.4;
+
+                            if (dist > optimalDist) {
+                                const ratio = (dist - optimalDist) / dist;
+                                segment.x -= dx * ratio * 0.85;
+                                segment.y -= dy * ratio * 0.85;
+                            }
+
+                            segment.x -= this.vx * (sIdx * 0.04);
+                            segment.y -= this.vy * (sIdx * 0.04);
+                            segment.y += 0.06;
+
+                            segment.x += Math.sin(this.pulseTimer * 1.5 + sIdx * 0.1) * 0.02;
+                        }
+                    });
+                });
+
+                // 구강완 연산
+                this.oralArms.forEach((arm, aIdx) => {
+                    const offsetIndex = aIdx - (this.oralArms.length - 1) / 2;
+                    const attachmentAngle = this.angle + Math.PI;
+                    const spacing = this.radius * 0.18 * this.domeRatioX;
+
+                    let targetX = this.x + Math.cos(attachmentAngle) * (this.radius * 0.1) + Math.cos(attachmentAngle + Math.PI/2) * (offsetIndex * spacing);
+                    let targetY = this.y + Math.sin(attachmentAngle) * (this.radius * 0.1) + Math.sin(attachmentAngle + Math.PI/2) * (offsetIndex * spacing);
+
+                    arm.forEach((segment, sIdx) => {
+                        if (sIdx === 0) {
+                            segment.x += (targetX - segment.x) * 0.2;
+                            segment.y += (targetY - segment.y) * 0.2;
+                        } else {
+                            const prev = arm[sIdx - 1];
+                            const dx = segment.x - prev.x;
+                            const dy = segment.y - prev.y;
+                            const dist = Math.sqrt(dx * dx + dy * dy);
+                            const optimalDist = 1.8;
+
+                            if (dist > optimalDist) {
+                                const ratio = (dist - optimalDist) / dist;
+                                segment.x -= dx * ratio * 0.75;
+                                segment.y -= dy * ratio * 0.75;
+                            }
+
+                            segment.x -= this.vx * (sIdx * 0.06);
+                            segment.y -= this.vy * (sIdx * 0.06);
+                            segment.y += 0.07;
+
+                            segment.x += Math.sin(this.pulseTimer * 1.0 + sIdx * 0.12) * 0.03;
+                        }
+                    });
+                });
+            }
+
+            draw() {
+                ctx.save();
+
+                const preset = colorPresets[activeColorKey];
+                const dynamicHue = (preset.hue + this.hueOffset + 360) % 360;
+
+                // 1. 긴 실모양 외곽 촉수 그리기
+                this.tentacles.forEach((tentacle) => {
+                    ctx.beginPath();
+                    ctx.moveTo(tentacle.segments[0].x, tentacle.segments[0].y);
+                    for (let i = 1; i < tentacle.segments.length; i++) {
+                        ctx.lineTo(tentacle.segments[i].x, tentacle.segments[i].y);
+                    }
+                    ctx.strokeStyle = `hsla(${dynamicHue}, 80%, 75%, ${this.alpha * 0.18})`;
+                    ctx.lineWidth = 0.5;
+                    ctx.stroke();
+                });
+
+                // 2. 주름진 중앙 구강완 그리기
+                this.oralArms.forEach((arm) => {
+                    ctx.beginPath();
+                    ctx.moveTo(arm[0].x, arm[0].y);
+                    for (let i = 1; i < arm.length; i++) {
+                        ctx.lineTo(arm[i].x, arm[i].y);
+                    }
+                    ctx.strokeStyle = `hsla(${dynamicHue - 15}, 90%, 82%, ${this.alpha * 0.32})`;
+                    ctx.lineWidth = 1.6;
+                    ctx.lineCap = 'round';
+                    ctx.stroke();
+                });
+
+                // 3. 해파리 머리 좌표 변환 및 각도 회전
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle + Math.PI / 2);
+
+                ctx.shadowBlur = this.personality === 'active' ? 12 : 18;
+                ctx.shadowColor = `hsla(${dynamicHue}, 100%, 72%, 0.45)`;
+
+                // 돔 하단 우아한 프릴 주름 (Scalloped Margin)
+                ctx.beginPath();
+                ctx.ellipse(0, 0, this.radius * this.domeRatioX, this.radius * 0.82 * this.domeRatioY, 0, Math.PI, 0, false);
+                
+                const lobes = 8;
+                const rX = this.radius * this.domeRatioX;
+                const rY = 4.5 * this.domeRatioY;
+                for (let i = 0; i <= lobes; i++) {
+                    const ratio = i / lobes;
+                    const targetX = rX - (ratio * rX * 2);
+                    const waveY = Math.abs(Math.sin(ratio * Math.PI * lobes)) * 1.5 * this.domeRatioY;
+                    const targetY = rY - waveY;
+                    ctx.quadraticCurveTo(targetX + (rX / lobes), rY + waveY, targetX, targetY);
+                }
+                
+                // 순수 보석 발광 그라데이션
+                const domeGrad = ctx.createRadialGradient(0, -this.radius * 0.15, 0, 0, 0, this.radius * this.domeRatioX);
+                domeGrad.addColorStop(0, `hsla(${dynamicHue}, 95%, 90%, ${this.alpha * 0.90})`);
+                domeGrad.addColorStop(0.45, `hsla(${dynamicHue + 10}, 90%, 68%, ${this.alpha * 0.40})`);
+                domeGrad.addColorStop(1, `hsla(${dynamicHue - 10}, 100%, 45%, 0)`);
+
+                ctx.fillStyle = domeGrad;
+                ctx.fill();
+
+                // 반투명 클로버형 내장 생체기관 (Gonads) - 투명한 무광 연출
+                const organRad = this.radius * 0.28 * this.domeRatioX;
+                ctx.fillStyle = `hsla(${dynamicHue - 5}, 100%, 88%, ${this.alpha * 0.28})`;
+                for (let j = 0; j < 4; j++) {
+                    const organAng = (j * Math.PI) / 2 + Math.PI / 4;
+                    const ox = Math.cos(organAng) * (organRad * 0.35);
+                    const oy = Math.sin(organAng) * (organRad * 0.35) - (this.radius * 0.15 * this.domeRatioY);
+                    ctx.beginPath();
+                    ctx.arc(ox, oy, organRad * 0.42, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // 방사상 격막 구조선 (Radial Rib Lines) - 은근하고 세밀하게 투영
+                ctx.strokeStyle = `hsla(${dynamicHue}, 100%, 95%, 0.14)`;
+                ctx.lineWidth = 0.45;
+                const ribSteps = 5;
+                for (let i = 1; i < ribSteps; i++) {
+                    const ratio = i / ribSteps;
+                    const radX = this.radius * this.domeRatioX * Math.sin(ratio * Math.PI);
+                    const radY = -this.radius * 0.82 * this.domeRatioY * Math.cos(ratio * Math.PI);
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(0, -this.radius * 0.35 * this.domeRatioY);
+                    ctx.quadraticCurveTo(radX * 0.28, radY * 0.28, radX, radY);
+                    ctx.stroke();
+                }
+
+                ctx.restore();
+            }
+        }
+
+        // 극도로 정교해진 유기적 광선식 반딧불이 클래스
+        class DetailedFirefly {
+            constructor() {
+                const w = canvas.width / window.devicePixelRatio;
+                const h = canvas.height / window.devicePixelRatio;
+                
+                this.x = Math.random() * w;
+                this.y = Math.random() * h;
+                
+                this.vx = (Math.random() - 0.5) * 0.25;
+                this.vy = (Math.random() - 0.5) * 0.25;
+                
+                this.personality = Math.random() < 0.5 ? 'calm' : 'wandering';
+                // 더욱 작고 세련된 날개 크기
+                this.radius = 1.0 + Math.random() * 0.6;
+                
+                this.angle = Math.random() * Math.PI * 2;
+                
+                // 실제 반딧불이 명멸 주기 (비대칭형 충전-감쇠 공식)
+                this.blinkTimer = Math.random() * Math.PI * 2;
+                this.blinkSpeed = 0.015 + Math.random() * 0.015; 
+                
+                // 따뜻한 오라 황록색/황금색 톤
+                this.baseHue = 52 + Math.random() * 18; 
+                this.alpha = 0; 
+                this.fadeRate = 0.02;
+                this.maxAlpha = 0.7 + Math.random() * 0.2;
+            }
+
+            update(index) {
+                const w = canvas.width / window.devicePixelRatio;
+                const h = canvas.height / window.devicePixelRatio;
+                
+                this.blinkTimer += this.blinkSpeed;
+                
+                if (this.personality === 'wandering') {
+                    this.angle += (Math.random() - 0.5) * 0.15;
+                    const speed = 0.18 + Math.sin(this.blinkTimer) * 0.05;
+                    this.vx = Math.cos(this.angle) * speed;
+                    this.vy = Math.sin(this.angle) * speed;
+                } else {
+                    this.angle += (Math.random() - 0.5) * 0.05;
+                    this.vx = Math.cos(this.angle) * 0.05;
+                    this.vy = Math.sin(this.angle) * 0.05 - 0.012; 
+                }
+
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // 서로 반발하며 분산
+                fireflies.forEach((other, oIdx) => {
+                    if (index === oIdx) return;
+                    const dx = this.x - other.x;
+                    const dy = this.y - other.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    const safeSpace = 40;
+
+                    if (dist < safeSpace && dist > 0) {
+                        const repel = (safeSpace - dist) * 0.0006;
+                        this.vx += (dx / dist) * repel;
+                        this.vy += (dy / dist) * repel;
+                    }
+                });
+
+                // 테두리 반사 제어
+                const margin = 15;
+                if (this.x < margin) { this.x = margin; this.angle = 0; }
+                if (this.x > w - margin) { this.x = w - margin; this.angle = Math.PI; }
+                if (this.y < margin) { this.y = margin; this.angle = Math.PI / 2; }
+                if (this.y > h - margin) { this.y = h - margin; this.angle = -Math.PI / 2; }
+
+                if (this.alpha < this.maxAlpha) {
+                    this.alpha += this.fadeRate;
+                }
+            }
+
+            draw() {
+                // 비대칭 실제 생체 전기 깜빡임 유도 (급격히 올라갔다 스르르 사라지는 유체 광도)
+                const rawSine = Math.sin(this.blinkTimer);
+                // 지수 승수를 사용하여 실제 전기 점등처럼 연출
+                const pulse = Math.pow(Math.max(0, rawSine * 0.8 + 0.25), 2.5); 
+                const currentAlpha = this.alpha * pulse;
+
+                if (currentAlpha > 0.01) {
+                    ctx.save();
+                    
+                    // [해결안 1]: 실제 빛 방출 효과 모방을 위한 Canvas 'screen' 블렌드 합성 모드 전환
+                    ctx.globalCompositeOperation = 'screen';
+
+                    // 실제 불빛 크기 축소 스케일
+                    const glowRadius = this.radius * (4.0 + pulse * 6);
+                    
+                    const flyAngle = Math.atan2(this.vy, this.vx);
+                    const glowOffsetX = -Math.cos(flyAngle) * (this.radius * 0.8);
+                    const glowOffsetY = -Math.sin(flyAngle) * (this.radius * 0.8);
+
+                    // [해결안 2]: 실제 빛의 감쇄 역자승 법칙을 시각적으로 모방하는 정밀한 다층 그라데이션
+                    const grad = ctx.createRadialGradient(
+                        this.x + glowOffsetX, this.y + glowOffsetY, 0, 
+                        this.x + glowOffsetX, this.y + glowOffsetY, glowRadius
+                    );
+                    
+                    // 1) 고밀도 백색 에너지 코어 (실제 램프 필라멘트 효과)
+                    grad.addColorStop(0, `hsla(${this.baseHue}, 100%, 97%, ${currentAlpha * 0.95})`);
+                    // 2) 네온 황록색 고압 광륜 (Halo)
+                    grad.addColorStop(0.2, `hsla(${this.baseHue + 4}, 100%, 75%, ${currentAlpha * 0.7})`);
+                    // 3) 아늑하고 따뜻한 산란 금빛 (Warm Spread)
+                    grad.addColorStop(0.5, `hsla(${this.baseHue - 8}, 100%, 55%, ${currentAlpha * 0.3})`);
+                    // 4) 주변 대기 수렴 경계
+                    grad.addColorStop(1, `hsla(${this.baseHue - 15}, 100%, 45%, 0)`);
+                    
+                    ctx.beginPath();
+                    ctx.arc(this.x + glowOffsetX, this.y + glowOffsetY, glowRadius, 0, Math.PI * 2);
+                    ctx.fillStyle = grad;
+                    ctx.fill();
+
+                    // 블렌딩 모드를 일반으로 원위치한 후 작고 어두운 몸통 렌더링
+                    ctx.globalCompositeOperation = 'source-over';
+                    ctx.translate(this.x, this.y);
+                    ctx.rotate(flyAngle);
+
+                    // 앞가슴 (Thorax - 미세 적색 포인트)
+                    ctx.beginPath();
+                    ctx.arc(this.radius * 0.4, 0, this.radius * 0.35, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(130, 25, 15, 0.7)'; 
+                    ctx.fill();
+
+                    // 날개깃 (Elytra - 어두운 갈색 등갑)
+                    ctx.beginPath();
+                    ctx.ellipse(-this.radius * 0.25, 0, this.radius * 0.85, this.radius * 0.42, 0, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(20, 20, 18, 0.85)'; 
+                    ctx.fill();
+
+                    ctx.restore();
+                }
+            }
+        }
+
+        function spawnJellyfish() {
+            jellyfishes.push(new RealisticJellyfish());
+        }
+
+        function spawnFirefly() {
+            fireflies.push(new DetailedFirefly());
+        }
+
+        // 잔잔한 부유 기포 깔아두기
+        for(let i=0; i<18; i++) {
+            backgroundBubbles.push(new Bubble());
+        }
+
+        function animate() {
+            const w = canvas.width / window.devicePixelRatio;
+            const h = canvas.height / window.devicePixelRatio;
+
+            if (currentEnvironment === 'jellyfish') {
+                ctx.fillStyle = 'rgba(1, 1, 3, 0.12)';
+            } else {
+                ctx.fillStyle = 'rgba(1, 2, 1, 0.15)'; 
+            }
+            ctx.fillRect(0, 0, w, h);
+
+            backgroundBubbles.forEach(b => {
+                b.update();
+                b.draw();
+            });
+
+            if (currentEnvironment === 'jellyfish') {
+                jellyfishes.forEach((j, idx) => {
+                    j.update(idx);
+                    j.draw();
+                });
+            } else {
+                fireflies.forEach((f, idx) => {
+                    f.update(idx);
+                    f.draw();
+                });
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        window.onload = function() {
+            animate();
+            renderDisplay();
+            updateStyleWithPreset();
+        }
+    </script>
+</body>
+</html>
+
