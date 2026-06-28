@@ -44,17 +44,14 @@
 
     <div class="w-full max-w-4xl flex flex-col lg:flex-row items-center justify-center gap-10 lg:gap-16 z-10">
         
-        <!-- 왼쪽: 캔버스 기반 인터랙티브 자연 수조/숲 뷰어 -->
-        <div id="canvas-container" class="relative w-full max-w-[380px] aspect-[4/5] bg-[#020203] rounded-[32px] border border-white/[0.02] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.98)] overflow-hidden">
-            <div id="glass-lens" class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.003] to-white/[0.015] pointer-events-none z-10"></div>
-            
+        <!-- 왼쪽: 캔버스 기반 자연 수조/숲 뷰어 (테두리 및 배경 경계선을 완전히 제거하여 전체 화면과 일체화) -->
+        <div id="canvas-container" class="relative w-full max-w-[380px] aspect-[4/5] overflow-hidden">
+            <!-- 투명 캔버스 레이어로 전체 화면의 어둠과 연결 -->
             <canvas id="aquariumCanvas" class="absolute inset-0 w-full h-full z-0 block"></canvas>
             
             <div id="view-label" class="absolute bottom-6 left-6 z-10 text-[8px] text-white/10 font-light tracking-[0.3em] uppercase pointer-events-none">
                 Bioluminescent Sanctuary
             </div>
-            
-            <div id="tank-top-glow" class="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-cyan-500/15 to-transparent transition-all duration-1000"></div>
         </div>
 
         <!-- 오른쪽: 초간결 미니멀 공부 대시보드 -->
@@ -191,7 +188,6 @@
         const btnToggle = document.getElementById('btn-toggle');
         const bellSound = document.getElementById('bell-sound');
         const backlight = document.getElementById('backlight');
-        const tankTopGlow = document.getElementById('tank-top-glow');
         const viewLabel = document.getElementById('view-label');
         const canvasContainer = document.getElementById('canvas-container');
 
@@ -224,7 +220,6 @@
             const preset = colorPresets[colorName];
             
             backlight.style.background = preset.btnColor;
-            tankTopGlow.style.background = `linear-gradient(to right, transparent, ${preset.btnColor}26, transparent)`;
             
             const buttons = document.querySelectorAll('.color-dot');
             buttons.forEach(btn => {
@@ -459,12 +454,10 @@
                 // 개성분류 정의
                 this.personality = Math.random() < 0.45 ? 'active' : 'calm';
                 
-                // 크기 스케일 변조
                 this.radius = this.personality === 'active' 
                     ? 11 + Math.random() * 2.5 
                     : 14 + Math.random() * 4.5; 
                 
-                // 속도 상한
                 this.speedLimit = this.personality === 'active' ? 0.42 : 0.14;
                 
                 this.pulseTimer = Math.random() * Math.PI * 2;
@@ -514,6 +507,7 @@
                 const isContracting = rawPulse > 0.65; 
 
                 if (isContracting) {
+                    // 수축: 폭은 줄고 고도는 증가
                     this.domeRatioX += (0.75 - this.domeRatioX) * 0.12;
                     this.domeRatioY += (1.18 - this.domeRatioY) * 0.12;
 
@@ -527,6 +521,7 @@
                         this.targetAngle = -Math.PI/2 + (Math.random() - 0.5) * 1.0;
                     }
                 } else {
+                    // 이완: 동그란 돔 원형 회복
                     this.domeRatioX += (1.05 - this.domeRatioX) * 0.03;
                     this.domeRatioY += (0.91 - this.domeRatioY) * 0.03;
                 }
@@ -771,7 +766,7 @@
                 this.blinkTimer = Math.random() * Math.PI * 2;
                 this.blinkSpeed = 0.012 + Math.random() * 0.018; 
                 
-                // [요청 수정 반영]: 이전 버전 대비 약 1.5배 웅장하게 확장된 빛 산란 (최대 반경 인수 복구 및 튜닝)
+                // 웅장하고 부드러운 중대형 반경의 아우라 산란 비율 설정
                 this.maxGlowMultiplier = 10.0 + Math.random() * 8.0; 
                 this.maxAlpha = 0.6 + Math.random() * 0.25;
                 
@@ -841,7 +836,7 @@
                     // 가산 혼합(Add Blend/Screen) 모드로 물리적 실제 밤안개 속 광원 산란 완벽 재현
                     ctx.globalCompositeOperation = 'screen';
 
-                    // [조정]: 조금 더 영롱하게 커진 반사 반경 적용
+                    // 조금 더 영롱하게 커진 반사 반경 적용
                     const glowRadius = this.radius * (6.0 + pulse * this.maxGlowMultiplier);
                     
                     const flyAngle = Math.atan2(this.vy, this.vx);
@@ -912,7 +907,7 @@
             if (currentEnvironment === 'jellyfish') {
                 ctx.fillStyle = 'rgba(1, 1, 3, 0.12)';
             } else {
-                ctx.fillStyle = 'rgba(1, 2, 1, 0.15)'; 
+                ctx.fillStyle = 'rgba(2, 3, 2, 0.15)'; 
             }
             ctx.fillRect(0, 0, w, h);
 
