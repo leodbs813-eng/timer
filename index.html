@@ -771,8 +771,8 @@
                 this.blinkTimer = Math.random() * Math.PI * 2;
                 this.blinkSpeed = 0.012 + Math.random() * 0.018; 
                 
-                // [개선 반영]: 너무 밝게 왜곡되지 않도록 수치를 중간 규모로 조정 (최대 11배 수준으로 다운징)
-                this.maxGlowMultiplier = 5.0 + Math.random() * 6.0; 
+                // [요청 수정 반영]: 이전 버전 대비 약 1.5배 웅장하게 확장된 빛 산란 (최대 반경 인수 복구 및 튜닝)
+                this.maxGlowMultiplier = 10.0 + Math.random() * 8.0; 
                 this.maxAlpha = 0.6 + Math.random() * 0.25;
                 
                 // 개체 특징 5: 아늑한 빛 톤의 다채로운 스펙트럼 화장 (황록색, 아늑한 밤숲 연두색, 그윽한 황금빛)
@@ -841,8 +841,8 @@
                     // 가산 혼합(Add Blend/Screen) 모드로 물리적 실제 밤안개 속 광원 산란 완벽 재현
                     ctx.globalCompositeOperation = 'screen';
 
-                    // [개선 반영]: 부드럽고 영롱한 중간 반경의 크기로 광륜 볼륨 다운징 조정
-                    const glowRadius = this.radius * (4.5 + pulse * this.maxGlowMultiplier);
+                    // [조정]: 조금 더 영롱하게 커진 반사 반경 적용
+                    const glowRadius = this.radius * (6.0 + pulse * this.maxGlowMultiplier);
                     
                     const flyAngle = Math.atan2(this.vy, this.vx);
                     // 광원 오프셋 배치 (빛의 꼬리가 반딧불이 꽁무니 끝에 편향 부합)
