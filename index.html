@@ -3,11 +3,11 @@
 <head>  
     <meta charset="UTF-8">  
     <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-    <title>O / Deep Sea & Firefly Minimalist Timer</title>  
+    <title>Deep Sea & Firefly Minimalist Timer</title>  
     <!-- Tailwind CSS CDN -->  
     <script src="https://cdn.tailwindcss.com"></script>  
     <style>  
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;1,100&family=Noto+Sans+KR:wght@300;400;500&display=swap');  
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght=0,100;0,200;0,300;0,400;1,100&family=Noto+Sans+KR:wght=300;400;500&display=swap');  
           
         body {  
             font-family: 'Noto Sans KR', sans-serif;  
@@ -40,13 +40,13 @@
         input[type="range"] {  
             -webkit-appearance: none;  
             appearance: none;  
-            width: 100%;
+            width: 100%;  
             background: rgba(255, 255, 255, 0.08);  
             border-radius: 9999px;  
             height: 8px;  
-            outline: none;
-            cursor: pointer;
-            touch-action: none; /* 슬라이더 동작 중 화면 스크롤 방지 */
+            outline: none;  
+            cursor: pointer;  
+            touch-action: none; /* 슬라이더 동작 중 화면 스크롤 방지 */  
         }  
         input[type="range"]::-webkit-slider-thumb {  
             -webkit-appearance: none;  
@@ -57,27 +57,27 @@
             background: #06b6d4;  
             cursor: grab;  
             transition: transform 0.1s, background-color 0.2s;  
-            box-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
+            box-shadow: 0 0 10px rgba(6, 182, 212, 0.5);  
         }  
         input[type="range"]::-webkit-slider-thumb:active {  
-            cursor: grabbing;
+            cursor: grabbing;  
             transform: scale(1.2);  
-            background-color: #22d3ee;
-        }
+            background-color: #22d3ee;  
+        }  
         input[type="range"]::-moz-range-thumb {  
             width: 20px;  
             height: 20px;  
-            border: none;
+            border: none;  
             border-radius: 50%;  
             background: #06b6d4;  
             cursor: grab;  
             transition: transform 0.1s, background-color 0.2s;  
-            box-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
+            box-shadow: 0 0 10px rgba(6, 182, 212, 0.5);  
         }  
         input[type="range"]::-moz-range-thumb:active {  
-            cursor: grabbing;
+            cursor: grabbing;  
             transform: scale(1.2);  
-            background-color: #22d3ee;
+            background-color: #22d3ee;  
         }  
     </style>  
 </head>  
@@ -89,8 +89,8 @@
     <!-- 화면 전체를 가득 채우는 몽환적인 유동 자연 캔버스 -->  
     <canvas id="aquariumCanvas" class="absolute inset-0 w-full h-full z-0 block"></canvas>  
   
-    <!-- 중앙: 초간결 미니멀 공부 대시보드 (물리적 피하기의 대상이 됨) -->  
-    <div id="timer-panel" class="w-full max-w-[320px] flex flex-col items-center text-center z-10 bg-[#07070d]/90 backdrop-blur-md border border-white/[0.04] p-8 rounded-[36px] shadow-[0_30px_100px_rgba(0,0,0,0.8)] transition-transform duration-300">  
+    <!-- 중앙: 초간결 미니멀 공부 대시보드 (반투명 글래스모피즘 스타일) -->  
+    <div id="timer-panel" class="w-full max-w-[320px] flex flex-col items-center text-center z-10 bg-[#07070d]/25 backdrop-blur-[6px] border border-white/[0.06] p-8 rounded-[36px] shadow-[0_30px_100px_rgba(0,0,0,0.5)] transition-transform duration-300">  
           
         <!-- 환경 전환 탭 -->  
         <div class="flex bg-white/[0.02] border border-white/[0.04] p-1 rounded-xl mb-6 w-full">  
@@ -109,7 +109,7 @@
             </div>  
         </div>  
   
-        <!-- 초대형 얇은 미니멀 타이머 디스플레이 (클릭 시 세팅 열림) -->  
+        <!-- 초대형 얇은 미니멀 타이머 디스플레이 -->  
         <div id="timer-display" onclick="openTimerSettings()" class="timer-font text-7xl md:text-8xl tracking-tighter text-slate-100 leading-none cursor-pointer hover:text-cyan-400 transition-colors duration-300 relative group" title="클릭하여 시간 변경">  
             30:00  
             <span class="absolute -bottom-4 left-1/2 transform -translate-x-1/2 text-[9px] text-slate-500 font-light opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">시간 변경</span>  
@@ -127,10 +127,18 @@
             </div>  
         </div>  
   
-        <!-- 생명체 소환 카운터 -->  
-        <div class="mt-6 w-full flex items-center justify-between border-t border-white/5 pt-5 text-xs text-slate-500 font-light">  
-            <span id="creature-label">수조 속 해파리</span>  
-            <span id="creature-count" class="font-normal text-cyan-400 bg-cyan-500/5 px-2.5 py-1 rounded text-[11px] font-semibold border border-cyan-500/10">0마리</span>  
+        <!-- 생명체 소환 카운터 (UI 일관성 완벽 통일) -->  
+        <div class="mt-6 w-full flex flex-col gap-2.5 border-t border-white/5 pt-5 text-xs text-slate-500 font-light">  
+            <!-- 일반 개체 -->  
+            <div class="flex items-center justify-between w-full">  
+                <span id="creature-label" class="text-slate-400 font-light">일반 해파리</span>  
+                <span id="creature-count" class="font-normal text-cyan-400 bg-cyan-500/5 px-2.5 py-1 rounded text-[11px] font-semibold border border-cyan-500/10 transition-all duration-500">0마리</span>  
+            </div>  
+            <!-- 특별 개체 현황 표시 레이어 (일반 개체와 디자인 100% 통합) -->  
+            <div class="flex items-center justify-between w-full" id="special-creature-row">  
+                <span id="special-label" class="text-amber-400 font-light">✨ 에인션트 코랄</span>  
+                <span id="special-count" class="font-normal text-amber-400 bg-amber-500/5 px-2.5 py-1 rounded text-[11px] font-semibold border border-amber-500/10 transition-all duration-500">0마리</span>  
+            </div>  
         </div>  
   
         <!-- 미니멀 얇은 컨트롤 버튼 배열 -->  
@@ -139,18 +147,18 @@
                 <button id="btn-toggle" onclick="toggleTimer()" class="flex-[2] py-3.5 px-5 rounded-xl font-medium text-xs bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition-all shadow-md shadow-cyan-500/5 active:scale-[0.98]">  
                     시작  
                 </button>  
-                <button onclick="resetTimer()" class="flex-1 py-3.5 px-5 rounded-xl font-medium text-xs bg-[#0b0c13] hover:bg-[#12141f] text-slate-300 border border-white/5 transition-all active:scale-[0.98]">  
+                <button onclick="resetTimer()" class="flex-1 py-3.5 px-5 rounded-xl font-medium text-xs bg-[#0b0c13]/80 hover:bg-[#12141f] text-slate-300 border border-white/5 transition-all active:scale-[0.98]">  
                     리셋  
                 </button>  
             </div>  
             <!-- 무소음 즉시 방류 (테스트용) -->  
-            <button onclick="instantCycle()" class="py-2.5 px-4 rounded-lg font-light text-[10px] bg-[#030306]/50 hover:bg-white/[0.02] border border-white/[0.02] text-slate-600 hover:text-slate-400 transition-all" id="btn-cheat">  
-                방류  
+            <button onclick="instantCycle()" class="py-2.5 px-4 rounded-lg font-light text-[10px] bg-[#030306]/30 hover:bg-white/[0.02] border border-white/[0.02] text-slate-600 hover:text-slate-400 transition-all" id="btn-cheat">  
+                테스트 소환  
             </button>  
         </div>  
     </div>  
   
-    <!-- 타이머 설정 커스텀 모달 (텍스트가 군더더기 없이 정제됨) -->  
+    <!-- 타이머 설정 커스텀 모달 -->  
     <div id="settings-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 p-4">  
         <div class="w-full max-w-[300px] bg-[#090911]/95 border border-white/10 rounded-[28px] p-6 shadow-2xl transform scale-95 transition-transform duration-300" id="settings-modal-content">  
             
@@ -277,6 +285,9 @@
         const btnCheat = document.getElementById('btn-cheat');  
         const lightingSection = document.getElementById('lighting-section');  
   
+        const specialLabel = document.getElementById('special-label');  
+        const specialCountDisplay = document.getElementById('special-count');  
+  
         const alarmToast = document.getElementById('alarm-toast');  
         const toastTitle = document.getElementById('toast-title');  
         const toastMessage = document.getElementById('toast-message');  
@@ -330,7 +341,9 @@
         function updateStyleWithPreset() {  
             const preset = colorPresets[activeColorKey];  
             modeBadge.className = `px-2.5 py-0.5 rounded-full text-[10px] font-medium tracking-wider ${preset.badgeBg} ${preset.badgeText} ${preset.badgeBorder} transition-all duration-500 uppercase`;  
-            creatureCountDisplay.className = `font-normal ${preset.badgeText} ${preset.badgeBg} px-2.5 py-1 rounded text-[11px] font-semibold border ${preset.badgeBorder}`;  
+            
+            // 일반 개체 카운터 스타일링 동적 매핑  
+            creatureCountDisplay.className = `font-normal ${preset.badgeText} ${preset.badgeBg} px-2.5 py-1 rounded text-[11px] font-semibold border ${preset.badgeBorder} transition-all duration-500`;  
               
             if (isRunning) {  
                 btnToggle.style.backgroundColor = '#0b0c13';  
@@ -358,8 +371,8 @@
                 tabJellyfish.className = "mode-tab flex-1 py-1.5 rounded-lg text-xs font-medium tracking-wide bg-white/[0.04] text-cyan-400";  
                 tabFirefly.className = "mode-tab flex-1 py-1.5 rounded-lg text-xs font-medium tracking-wide text-slate-500 hover:text-slate-300";  
                   
-                creatureLabel.textContent = "수조 속 해파리";  
-                btnCheat.textContent = "방류";  
+                creatureLabel.textContent = "일반 해파리";  
+                btnCheat.textContent = "테스트 소환";  
                 viewLabel.textContent = `Bioluminescent Sanctuary`;  
                 lightingSection.style.opacity = "1";  
                 lightingSection.style.pointerEvents = "auto";  
@@ -371,8 +384,8 @@
                 tabFirefly.className = "mode-tab flex-1 py-1.5 rounded-lg text-xs font-medium tracking-wide bg-white/[0.04] text-amber-400";  
                 tabJellyfish.className = "mode-tab flex-1 py-1.5 rounded-lg text-xs font-medium tracking-wide text-slate-500 hover:text-slate-300";  
                   
-                creatureLabel.textContent = "숲 속 반딧불이";  
-                btnCheat.textContent = "방류";  
+                creatureLabel.textContent = "일반 반딧불이";  
+                btnCheat.textContent = "테스트 소환";  
                 viewLabel.textContent = `Mystic Firefly Forest`;  
                   
                 document.body.style.backgroundColor = "#020302";  
@@ -398,8 +411,19 @@
                 modeBadge.textContent = 'BREAK';  
             }  
   
-            const count = currentEnvironment === 'jellyfish' ? jellyfishes.length : fireflies.length;  
-            creatureCountDisplay.textContent = `${count}마리`;  
+            if (currentEnvironment === 'jellyfish') {  
+                const normals = jellyfishes.filter(j => !j.isSpecial).length;  
+                const specials = jellyfishes.filter(j => j.isSpecial).length;  
+                creatureCountDisplay.textContent = `${normals}마리`;  
+                specialLabel.textContent = "에인션트 코랄";  
+                specialCountDisplay.textContent = `${specials}마리`;  
+            } else {  
+                const normals = fireflies.filter(f => !f.isSpecial).length;  
+                const specials = fireflies.filter(f => f.isSpecial).length;  
+                creatureCountDisplay.textContent = `${normals}마리`;  
+                specialLabel.textContent = "오로라 프리즘";  
+                specialCountDisplay.textContent = `${specials}마리`;  
+            }  
         }  
   
         window.toggleTimer = function() {  
@@ -546,6 +570,7 @@
         let jellyfishes = [];  
         let fireflies = [];  
         let backgroundBubbles = [];  
+        let screenParticles = []; // 특별 이펙트 및 비행 궤적 입자들  
   
         // 휘젓기 상호작용 관련 데이터  
         let mouseX = -1000;  
@@ -559,9 +584,6 @@
         let lastWidth = 0;  
         let lastHeight = 0;  
         let canvasRect = { left: 0, top: 0 };  
-        
-        // 타이머 패널을 회피 영역으로 처리하기 위한 캐시 바운더리
-        let panelAvoidArea = { left: 0, top: 0, right: 0, bottom: 0 };
   
         function resizeCanvas(force = false) {  
             const w = window.innerWidth;  
@@ -577,19 +599,6 @@
             ctx.scale(window.devicePixelRatio, window.devicePixelRatio);  
   
             canvasRect = canvas.getBoundingClientRect();  
-            
-            // 타이머 패널 영역 측정 및 영역 캐싱 (물리 튕김용 마진 포함)
-            const panel = document.getElementById('timer-panel');
-            if (panel) {
-                const rect = panel.getBoundingClientRect();
-                const margin = 20; // 튕길 반경을 조금 더 여유있게 마진 부여
-                panelAvoidArea = {
-                    left: rect.left - canvasRect.left - margin,
-                    top: rect.top - canvasRect.top - margin,
-                    right: rect.right - canvasRect.left + margin,
-                    bottom: rect.bottom - canvasRect.top + margin
-                };
-            }
         }  
         window.addEventListener('resize', () => resizeCanvas(false));  
         resizeCanvas(true);  
@@ -615,7 +624,7 @@
   
         canvas.addEventListener('mousedown', (e) => {  
             trackInteraction(e.clientX, e.clientY);  
-            swayPower = 12; // 클릭 순간 강한 힘 작용  
+            swayPower = 12;  
         });  
   
         canvas.addEventListener('mouseleave', () => {  
@@ -642,6 +651,25 @@
             mouseY = -1000;  
             isSwaying = false;  
         });  
+  
+        // 찬란한 대폭발 파티클 이펙트 생성 함수  
+        function triggerAscensionVisual(centerX, centerY, colorHue) {  
+            for (let i = 0; i < 60; i++) {  
+                const angle = Math.random() * Math.PI * 2;  
+                const speed = 1.0 + Math.random() * 4.5;  
+                screenParticles.push({  
+                    x: centerX,  
+                    y: centerY,  
+                    vx: Math.cos(angle) * speed,  
+                    vy: Math.sin(angle) * speed,  
+                    radius: 1.5 + Math.random() * 2.5,  
+                    hue: colorHue + (Math.random() - 0.5) * 40,  
+                    alpha: 1.0,  
+                    decay: 0.012 + Math.random() * 0.015,  
+                    type: 'ascension'  
+                });  
+            }  
+        }  
   
         class Bubble {  
             constructor() {  
@@ -674,9 +702,9 @@
             }  
         }  
   
-        // 극도로 사실적인 해파리 생체 구조 클래스  
+        // 사실적인 해파리 생체 구조 클래스 (에인션트 보색 코어 라이팅 병합)  
         class RealisticJellyfish {  
-            constructor() {  
+            constructor(isSpecial = false) {  
                 const w = window.innerWidth;  
                 const h = window.innerHeight;  
                   
@@ -685,26 +713,29 @@
   
                 this.x = spawnMarginX + Math.random() * (w - spawnMarginX * 2);  
                 this.y = spawnMarginY + Math.random() * (h - spawnMarginY * 2);  
-
-                // 만약 첫 스폰 위치가 타이머 패널 속이라면 밖으로 밀어내기
-                if (this.x > panelAvoidArea.left && this.x < panelAvoidArea.right &&
-                    this.y > panelAvoidArea.top && this.y < panelAvoidArea.bottom) {
-                    this.x = Math.random() < 0.5 ? panelAvoidArea.left - 50 : panelAvoidArea.right + 50;
-                }
                   
                 this.vx = 0;  
                 this.vy = -0.15;   
                   
+                this.isSpecial = isSpecial; // 특별 고대종 해파리 여부  
                 this.personality = Math.random() < 0.45 ? 'active' : 'calm';  
                   
-                this.radius = this.personality === 'active'   
-                    ? 11 + Math.random() * 2.5   
-                    : 14 + Math.random() * 4.5;   
-                  
-                this.speedLimit = this.personality === 'active' ? 0.42 : 0.14;  
+                if (this.isSpecial) {  
+                    // 고대종 해파리의 웅장한 신체 규격  
+                    this.radius = this.personality === 'active'  
+                        ? 21 + Math.random() * 3.5  
+                        : 26 + Math.random() * 5.5;  
+                    this.speedLimit = this.personality === 'active' ? 0.38 : 0.14;  
+                    this.pulseDurationSpeed = this.personality === 'active' ? 0.018 : 0.006;   
+                } else {  
+                    this.radius = this.personality === 'active'   
+                        ? 11 + Math.random() * 2.5   
+                        : 14 + Math.random() * 4.5;   
+                    this.speedLimit = this.personality === 'active' ? 0.42 : 0.14;  
+                    this.pulseDurationSpeed = this.personality === 'active' ? 0.022 : 0.007;   
+                }  
                   
                 this.pulseTimer = Math.random() * Math.PI * 2;  
-                this.pulseDurationSpeed = this.personality === 'active' ? 0.022 : 0.007;   
                   
                 this.angle = -Math.PI / 2 + (Math.random() - 0.5) * 0.18;   
                 this.targetAngle = this.angle;  
@@ -712,15 +743,15 @@
                 this.domeRatioX = 1.0;  
                 this.domeRatioY = 1.0;  
   
-                this.hueOffset = (Math.random() - 0.5) * 60;   
+                this.hueOffset = (Math.random() - 0.5) * 45;   
                 this.alpha = this.personality === 'active' ? 0.52 + Math.random() * 0.1 : 0.62 + Math.random() * 0.15;  
   
                 // 실 촉수  
                 this.tentacles = [];  
-                const thinTentacleCount = this.personality === 'active' ? 4 : 6;  
+                const thinTentacleCount = this.isSpecial ? 8 : (this.personality === 'active' ? 4 : 6);  
                 for (let i = 0; i < thinTentacleCount; i++) {  
                     let segments = [];  
-                    const length = this.personality === 'active' ? 5 : 7;   
+                    const length = this.isSpecial ? 13 : (this.personality === 'active' ? 5 : 7);   
                     for (let s = 0; s < length; s++) {  
                         segments.push({ x: this.x, y: this.y });  
                     }  
@@ -729,10 +760,10 @@
   
                 // 구강완 프릴 촉수  
                 this.oralArms = [];  
-                const armCount = 2;  
+                const armCount = this.isSpecial ? 4 : 2;  
                 for (let i = 0; i < armCount; i++) {  
                     let segments = [];  
-                    const length = this.personality === 'active' ? 4 : 6;   
+                    const length = this.isSpecial ? 10 : (this.personality === 'active' ? 4 : 6);   
                     for (let s = 0; s < length; s++) {  
                         segments.push({ x: this.x, y: this.y });  
                     }  
@@ -774,7 +805,7 @@
                 this.vy *= 0.92;  
                 this.vy += this.personality === 'active' ? 0.004 : 0.006;  
   
-                // [신규 인터랙션] 마우스/터치 휘젓기 반응 연산  
+                // 마우스/터치 휘젓기 반응 연산  
                 if (isSwaying && mouseX !== -1000) {  
                     const dx = this.x - mouseX;  
                     const dy = this.y - mouseY;  
@@ -788,22 +819,21 @@
                         this.targetAngle = Math.atan2(this.y - mouseY, this.x - mouseX);  
                     }  
                 }  
-
-                // [중요 패치] 타이머 패널 뒤로 숨어들어가지 않도록 하는 회피 알고리즘
-                if (this.x > panelAvoidArea.left && this.x < panelAvoidArea.right &&
-                    this.y > panelAvoidArea.top && this.y < panelAvoidArea.bottom) {
-                    
-                    // 패널 중심으로터 어느 방향으로 가까운지 판단하여 밀어냄
-                    const panelCenterX = (panelAvoidArea.left + panelAvoidArea.right) / 2;
-                    const panelCenterY = (panelAvoidArea.top + panelAvoidArea.bottom) / 2;
-                    const pushAngle = Math.atan2(this.y - panelCenterY, this.x - panelCenterX);
-                    
-                    const repelForce = 0.5; // 패널 밖으로 튕겨내는 힘 강도
-                    this.vx += Math.cos(pushAngle) * repelForce;
-                    this.vy += Math.sin(pushAngle) * repelForce;
-                    
-                    this.targetAngle = pushAngle;
-                }
+  
+                // [하단 뭉침 방지 강제 기류]  
+                const bottomThreshold = h * 0.85;  
+                if (this.y > bottomThreshold) {  
+                    const depthFactor = (this.y - bottomThreshold) / (h * 0.15);  
+                    this.vy -= depthFactor * 0.16; // 위로 밀어내는 완충 부력  
+                    this.vx += (Math.random() - 0.5) * 0.05;  
+                }  
+  
+                // [상단 천장 가둠 방지]  
+                const topThreshold = h * 0.15;  
+                if (this.y < topThreshold) {  
+                    const heightFactor = (topThreshold - this.y) / (h * 0.15);  
+                    this.vy += heightFactor * 0.1; // 아래로 순환하는 수중 미풍  
+                }  
   
                 // 개체간 거리 분산 유지  
                 jellyfishes.forEach((other, oIdx) => {  
@@ -820,8 +850,8 @@
                     }  
                 });  
   
-                const edgeMarginX = w > 640 ? 80 : 40;  
-                const edgeMarginY = h > 640 ? 80 : 40;  
+                const edgeMarginX = w > 640 ? 80 : 30;  
+                const edgeMarginY = h > 640 ? 80 : 30;  
   
                 const limitLeft = edgeMarginX + this.radius;  
                 const limitRight = w - edgeMarginX - this.radius;  
@@ -858,6 +888,42 @@
                 this.x += this.vx;  
                 this.y += this.vy;  
   
+                // 특별 해파리가 전진 수축할 때 보색 발광 포자 잔상 흩뿌림과 신비로운 수중 충격파 링 생성  
+                if (this.isSpecial && isContracting) {  
+                    const preset = colorPresets[activeColorKey];  
+                    const dynamicHue = (preset.hue + this.hueOffset + 360) % 360;  
+                    const complementaryHue = (dynamicHue + 180) % 360;  
+  
+                    if (Math.random() < 0.28) {  
+                        screenParticles.push({  
+                            x: this.x + (Math.random() - 0.5) * this.radius * 0.8,  
+                            y: this.y + this.radius * 0.6,  
+                            vx: -this.vx * 0.4 + (Math.random() - 0.5) * 0.15,  
+                            vy: -this.vy * 0.4 + 0.15,  
+                            radius: 1.2 + Math.random() * 1.8,  
+                            hue: complementaryHue,  
+                            alpha: 0.6,  
+                            decay: 0.012,  
+                            type: 'ascension'  
+                        });  
+                    }  
+  
+                    // 웅장한 신비로움을 위한 펄스형 수중 충격파 링 생성 (Shockwave Ring)  
+                    if (Math.random() < 0.04) {  
+                        screenParticles.push({  
+                            x: this.x,  
+                            y: this.y,  
+                            vx: 0,  
+                            vy: 0,  
+                            radius: this.radius * 0.8,  
+                            hue: complementaryHue,  
+                            alpha: 0.5,  
+                            decay: 0.015,  
+                            type: 'shockwave'  
+                        });  
+                    }  
+                }  
+  
                 // 촉수 세그먼트 물리 연산  
                 this.tentacles.forEach((tentacle, tIdx) => {  
                     const offsetIndex = tIdx - (this.tentacles.length - 1) / 2;  
@@ -877,7 +943,7 @@
                             const dy = segment.y - prev.y;  
                             const dist = Math.sqrt(dx * dx + dy * dy);  
                               
-                            const optimalDist = 2.4;  
+                            const optimalDist = this.isSpecial ? 3.0 : 2.4;  
   
                             if (dist > optimalDist) {  
                                 const ratio = (dist - optimalDist) / dist;  
@@ -912,7 +978,7 @@
                             const dx = segment.x - prev.x;  
                             const dy = segment.y - prev.y;  
                             const dist = Math.sqrt(dx * dx + dy * dy);  
-                            const optimalDist = 1.8;  
+                            const optimalDist = this.isSpecial ? 2.5 : 1.8;  
   
                             if (dist > optimalDist) {  
                                 const ratio = (dist - optimalDist) / dist;  
@@ -931,81 +997,239 @@
             }  
   
             draw() {  
-                ctx.save();  
+                ctx.save();  // [Outer Save]  
   
                 const preset = colorPresets[activeColorKey];  
-                const dynamicHue = (preset.hue + this.hueOffset + 360) % 360;  
+                let dynamicHue = (preset.hue + this.hueOffset + 360) % 360;  
+                const complementaryHue = (dynamicHue + 180) % 360;  
   
-                // 1. 긴 실모양 외곽 촉수 그리기  
-                this.tentacles.forEach((tentacle) => {  
-                    ctx.beginPath();  
-                    ctx.moveTo(tentacle.segments[0].x, tentacle.segments[0].y);  
-                    for (let i = 1; i < tentacle.segments.length; i++) {  
-                        ctx.lineTo(tentacle.segments[i].x, tentacle.segments[i].y);  
+                // 핵심 크기 가변변수(organRad) 선언을 분기 밖 상단에 완벽히 배치하여 소멸 오류 원천 진압!  
+                const organRad = this.radius * (this.isSpecial ? 0.32 : 0.28) * this.domeRatioX;  
+  
+                // 핵심 핵(Gonads)의 투명도 조절로 흐릿하고 영롱한 몽롱성 부여  
+                let coreColor = `hsla(${dynamicHue - 5}, 100%, 88%, ${this.alpha * 0.22})`;  
+                if (this.isSpecial) {  
+                    coreColor = `hsla(${complementaryHue}, 100%, 75%, ${this.alpha * 0.24})`; // 흐릿하고 몽롱한 보색 핵  
+                }  
+  
+                const lobes = this.isSpecial ? 10 : 8;  
+  
+                // 해파리 돔 패스 생성 헬퍼  
+                const drawDomePath = (radiusX, radiusY, ratioY) => {  
+                    ctx.ellipse(0, 0, radiusX, radiusY * ratioY, 0, Math.PI, 0, false);  
+                    for (let i = 0; i <= lobes; i++) {  
+                        const ratio = i / lobes;  
+                        const targetX = radiusX - (ratio * radiusX * 2);  
+                        const waveY = Math.abs(Math.sin(ratio * Math.PI * lobes)) * 1.5 * ratioY;  
+                        const targetY = (radiusY * ratioY) - waveY;  
+                        ctx.quadraticCurveTo(targetX + (radiusX / lobes), (radiusY * ratioY) + waveY, targetX, targetY);  
                     }  
-                    ctx.strokeStyle = `hsla(${dynamicHue}, 80%, 75%, ${this.alpha * 0.18})`;  
-                    ctx.lineWidth = 0.5;  
-                    ctx.stroke();  
-                });  
+                };  
   
-                // 2. 주름진 중앙 구강완 그리기  
-                this.oralArms.forEach((arm) => {  
-                    ctx.beginPath();  
-                    ctx.moveTo(arm[0].x, arm[0].y);  
-                    for (let i = 1; i < arm.length; i++) {  
-                        ctx.lineTo(arm[i].x, arm[i].y);  
+                if (this.isSpecial) {  
+                    ctx.save();  // [Inner Save for Special]  
+  
+                    // 1. 위성과 촉수도 몽롱하게 드로잉  
+                    ctx.globalCompositeOperation = 'screen';  
+                    
+                    // 우아한 초반투명 공전 구름 위성 Orbs  
+                    const orbCount = 3;  
+                    const rotationSpeed = Date.now() * 0.0018;  
+                    for (let i = 0; i < orbCount; i++) {  
+                        const orbAngle = (i * Math.PI * 2) / orbCount + rotationSpeed - (this.angle + Math.PI / 2);  
+                        const ox = Math.cos(orbAngle) * (this.radius * 1.45);  
+                        const oy = Math.sin(orbAngle) * (this.radius * 1.05 * this.domeRatioY);  
+                          
+                        ctx.save();  
+                        const orbGlow = ctx.createRadialGradient(ox, oy, 0, ox, oy, 16);  
+                        orbGlow.addColorStop(0, `hsla(${complementaryHue}, 100%, 85%, ${this.alpha * 0.35})`);  
+                        orbGlow.addColorStop(0.4, `hsla(${complementaryHue}, 100%, 70%, ${this.alpha * 0.12})`);  
+                        orbGlow.addColorStop(1, `rgba(0,0,0,0)`);  
+                          
+                        ctx.beginPath();  
+                        ctx.arc(ox, oy, 16, 0, Math.PI * 2);  
+                        ctx.fillStyle = orbGlow;  
+                        ctx.fill();  
+                        ctx.restore();  
                     }  
-                    ctx.strokeStyle = `hsla(${dynamicHue - 15}, 90%, 82%, ${this.alpha * 0.32})`;  
-                    ctx.lineWidth = 1.6;  
-                    ctx.lineCap = 'round';  
-                    ctx.stroke();  
-                });  
   
-                // 3. 해파리 머리 좌표 변환 및 각도 회전  
+                    // 2. 긴 실모양 외곽 촉수  
+                    this.tentacles.forEach((tentacle) => {  
+                        ctx.save();  
+                        ctx.beginPath();  
+                        ctx.moveTo(tentacle.segments[0].x, tentacle.segments[0].y);  
+                        for (let i = 1; i < tentacle.segments.length; i++) {  
+                            ctx.lineTo(tentacle.segments[i].x, tentacle.segments[i].y);  
+                        }  
+                        
+                        const tentacleGrad = ctx.createLinearGradient(  
+                            tentacle.segments[0].x, tentacle.segments[0].y,  
+                            tentacle.segments[tentacle.segments.length - 1].x, tentacle.segments[tentacle.segments.length - 1].y  
+                        );  
+                        tentacleGrad.addColorStop(0, `hsla(${dynamicHue}, 100%, 80%, ${this.alpha * 0.12})`);  
+                        tentacleGrad.addColorStop(0.5, `hsla(${dynamicHue}, 100%, 70%, ${this.alpha * 0.04})`);  
+                        tentacleGrad.addColorStop(1, 'rgba(0,0,0,0)');  
+                        
+                        ctx.strokeStyle = tentacleGrad;  
+                        ctx.lineWidth = 0.8;  
+                        ctx.shadowBlur = 8;  
+                        ctx.shadowColor = `hsla(${dynamicHue}, 100%, 70%, 0.25)`;  
+                        ctx.stroke();  
+                        ctx.restore();  
+                    });  
+  
+                    // 3. 주름진 중앙 구강완 드로잉  
+                    this.oralArms.forEach((arm) => {  
+                        ctx.save();  
+                        ctx.beginPath();  
+                        ctx.moveTo(arm[0].x, arm[0].y);  
+                        for (let i = 1; i < arm.length; i++) {  
+                            ctx.lineTo(arm[i].x, arm[i].y);  
+                        }  
+                        
+                        const armGrad = ctx.createLinearGradient(  
+                            arm[0].x, arm[0].y,  
+                            arm[arm.length - 1].x, arm[arm.length - 1].y  
+                        );  
+                        armGrad.addColorStop(0, `hsla(${dynamicHue - 15}, 100%, 85%, ${this.alpha * 0.18})`);  
+                        armGrad.addColorStop(0.6, `hsla(${dynamicHue - 10}, 100%, 75%, ${this.alpha * 0.06})`);  
+                        armGrad.addColorStop(1, 'rgba(0,0,0,0)');  
+                        
+                        ctx.strokeStyle = armGrad;  
+                        ctx.lineWidth = 3.0;  
+                        ctx.lineCap = 'round';  
+                        ctx.shadowBlur = 12;  
+                        ctx.shadowColor = `hsla(${dynamicHue - 15}, 100%, 75%, 0.35)`;  
+                        ctx.stroke();  
+                        ctx.restore();  
+                    });  
+  
+                    // 4. 해파리 머리 좌표 변환 및 각도 회전  
+                    ctx.translate(this.x, this.y);  
+                    ctx.rotate(this.angle + Math.PI / 2);  
+  
+                    ctx.shadowBlur = 25;  
+                    ctx.shadowColor = `hsla(${dynamicHue}, 100%, 72%, ${this.alpha * 0.35})`;  
+  
+                    // (A) 바깥쪽으로 부드럽게 퍼져 흩어지는 빛무리 성운 막  
+                    const outerGlow = ctx.createRadialGradient(0, -this.radius * 0.15, 0, 0, -this.radius * 0.15, this.radius * 1.5 * this.domeRatioX);  
+                    outerGlow.addColorStop(0, `hsla(${dynamicHue}, 100%, 80%, ${this.alpha * 0.28})`);  
+                    outerGlow.addColorStop(0.5, `hsla(${dynamicHue}, 90%, 60%, ${this.alpha * 0.10})`);  
+                    outerGlow.addColorStop(1, 'rgba(0,0,0,0)');  
+                    
+                    ctx.beginPath();  
+                    ctx.arc(0, -this.radius * 0.15, this.radius * 1.5 * this.domeRatioX, 0, Math.PI * 2);  
+                    ctx.fillStyle = outerGlow;  
+                    ctx.fill();  
+  
+                    // (B) 메인 돔  
+                    ctx.beginPath();  
+                    drawDomePath(this.radius * this.domeRatioX, this.radius * 0.82, this.domeRatioY);  
+                      
+                    const softDomeGrad = ctx.createRadialGradient(0, -this.radius * 0.15, 0, 0, 0, this.radius * this.domeRatioX);  
+                    softDomeGrad.addColorStop(0, `hsla(${dynamicHue}, 100%, 95%, ${this.alpha * 0.45})`);  
+                    softDomeGrad.addColorStop(0.5, `hsla(${dynamicHue + 10}, 95%, 72%, ${this.alpha * 0.18})`);  
+                    softDomeGrad.addColorStop(1, `rgba(0,0,0,0)`);  
+                      
+                    ctx.fillStyle = softDomeGrad;  
+                    ctx.fill();  
+  
+                    // (C) 내부 보호막 림  
+                    ctx.save();  
+                    ctx.beginPath();  
+                    drawDomePath(this.radius * 0.75 * this.domeRatioX, this.radius * 0.62, this.domeRatioY);  
+                    ctx.strokeStyle = `hsla(${dynamicHue}, 100%, 90%, ${this.alpha * 0.15})`;  
+                    ctx.lineWidth = 0.8;  
+                    ctx.stroke();  
+                    ctx.restore();  
+  
+                    // (D) 보색 아지랑이 성운 핵  
+                    const specialCoreGrad = ctx.createRadialGradient(0, -this.radius * 0.08, 0, 0, -this.radius * 0.08, this.radius * 0.60 * this.domeRatioX);  
+                    specialCoreGrad.addColorStop(0, `hsla(${complementaryHue}, 100%, 90%, ${this.alpha * 0.55})`);  
+                    specialCoreGrad.addColorStop(0.4, `hsla(${complementaryHue}, 100%, 75%, ${this.alpha * 0.20})`);  
+                    specialCoreGrad.addColorStop(1, 'rgba(0,0,0,0)');  
+  
+                    ctx.save();  
+                    ctx.globalCompositeOperation = 'screen';  
+                    ctx.shadowBlur = 30;  
+                    ctx.shadowColor = `hsla(${complementaryHue}, 100%, 65%, 0.8)`;  
+                    ctx.beginPath();  
+                    ctx.arc(0, -this.radius * 0.08, this.radius * 0.60 * this.domeRatioX, 0, Math.PI * 2);  
+                    ctx.fillStyle = specialCoreGrad;  
+                    ctx.fill();  
+                    ctx.restore();  
+  
+                    ctx.restore();  // [Inner Restore for Special]  
+                } else {  
+                    ctx.save();  // [Inner Save for Normal]  
+  
+                    // 1. 긴 실모양 외곽 촉수 그리기  
+                    this.tentacles.forEach((tentacle) => {  
+                        ctx.beginPath();  
+                        ctx.moveTo(tentacle.segments[0].x, tentacle.segments[0].y);  
+                        for (let i = 1; i < tentacle.segments.length; i++) {  
+                            ctx.lineTo(tentacle.segments[i].x, tentacle.segments[i].y);  
+                        }  
+                        ctx.strokeStyle = `hsla(${dynamicHue}, 80%, 75%, ${this.alpha * 0.18})`;  
+                        ctx.lineWidth = 0.5;  
+                        ctx.stroke();  
+                    });  
+      
+                    // 2. 주름진 중앙 구강완 그리기  
+                    this.oralArms.forEach((arm) => {  
+                        ctx.beginPath();  
+                        ctx.moveTo(arm[0].x, arm[0].y);  
+                        for (let i = 1; i < arm.length; i++) {  
+                            ctx.lineTo(arm[i].x, arm[i].y);  
+                        }  
+                        ctx.strokeStyle = `hsla(${dynamicHue - 15}, 90%, 82%, ${this.alpha * 0.32})`;  
+                        ctx.lineWidth = 1.6;  
+                        ctx.lineCap = 'round';  
+                        ctx.stroke();  
+                    });  
+  
+                    // 3. 해파리 머리 좌표 변환 및 각도 회전  
+                    ctx.translate(this.x, this.y);  
+                    ctx.rotate(this.angle + Math.PI / 2);  
+  
+                    ctx.shadowBlur = this.personality === 'active' ? 12 : 18;  
+                    ctx.shadowColor = `hsla(${dynamicHue}, 100%, 72%, 0.45)`;  
+  
+                    // 일반 해파리의 심플한 유리 돔 연출  
+                    ctx.beginPath();  
+                    drawDomePath(this.radius * this.domeRatioX, this.radius * 0.82, this.domeRatioY);  
+                      
+                    const domeGrad = ctx.createRadialGradient(0, -this.radius * 0.15, 0, 0, 0, this.radius * this.domeRatioX);  
+                    domeGrad.addColorStop(0, `hsla(${dynamicHue}, 95%, 90%, ${this.alpha * 0.80})`);  
+                    domeGrad.addColorStop(0.45, `hsla(${dynamicHue + 10}, 90%, 68%, ${this.alpha * 0.30})`);  
+                    domeGrad.addColorStop(1, `hsla(${dynamicHue - 10}, 100%, 45%, 0)`);  
+      
+                    ctx.fillStyle = domeGrad;  
+                    ctx.fill();  
+      
+                    ctx.strokeStyle = `hsla(${dynamicHue}, 100%, 90%, ${this.alpha * 0.08})`;  
+                    ctx.lineWidth = 0.45;  
+                    ctx.stroke();  
+  
+                    // 일반 해파리 고유 코어  
+                    ctx.fillStyle = coreColor;  
+                    const organCount = 4;  
+                    for (let j = 0; j < organCount; j++) {  
+                        const ox = Math.cos((j * Math.PI * 2) / organCount + Math.PI / 4) * (organRad * 0.35);  
+                        const oy = Math.sin((j * Math.PI * 2) / organCount + Math.PI / 4) * (organRad * 0.35) - (this.radius * 0.15 * this.domeRatioY);  
+                        ctx.beginPath();  
+                        ctx.arc(ox, oy, organRad * 0.42, 0, Math.PI * 2);  
+                        ctx.fill();  
+                    }  
+  
+                    ctx.restore();  // [Inner Restore for Normal]  
+                }  
+  
+                // 격막선 렌더링 세이프가드  
+                ctx.save();  
                 ctx.translate(this.x, this.y);  
                 ctx.rotate(this.angle + Math.PI / 2);  
-  
-                ctx.shadowBlur = this.personality === 'active' ? 12 : 18;  
-                ctx.shadowColor = `hsla(${dynamicHue}, 100%, 72%, 0.45)`;  
-  
-                // 돔 하단 우아한 프릴 주름 (Scalloped Margin)  
-                ctx.beginPath();  
-                ctx.ellipse(0, 0, this.radius * this.domeRatioX, this.radius * 0.82 * this.domeRatioY, 0, Math.PI, 0, false);  
-                  
-                const lobes = 8;  
-                const rX = this.radius * this.domeRatioX;  
-                const rY = 4.5 * this.domeRatioY;  
-                for (let i = 0; i <= lobes; i++) {  
-                    const ratio = i / lobes;  
-                    const targetX = rX - (ratio * rX * 2);  
-                    const waveY = Math.abs(Math.sin(ratio * Math.PI * lobes)) * 1.5 * this.domeRatioY;  
-                    const targetY = rY - waveY;  
-                    ctx.quadraticCurveTo(targetX + (rX / lobes), rY + waveY, targetX, targetY);  
-                }  
-                  
-                // 순수 보석 발광 그라데이션  
-                const domeGrad = ctx.createRadialGradient(0, -this.radius * 0.15, 0, 0, 0, this.radius * this.domeRatioX);  
-                domeGrad.addColorStop(0, `hsla(${dynamicHue}, 95%, 90%, ${this.alpha * 0.90})`);  
-                domeGrad.addColorStop(0.45, `hsla(${dynamicHue + 10}, 90%, 68%, ${this.alpha * 0.40})`);  
-                domeGrad.addColorStop(1, `hsla(${dynamicHue - 10}, 100%, 45%, 0)`);  
-  
-                ctx.fillStyle = domeGrad;  
-                ctx.fill();  
-  
-                // 반투명 클로버형 내장 생체기관 (Gonads) - 투명한 무광 연출  
-                const organRad = this.radius * 0.28 * this.domeRatioX;  
-                ctx.fillStyle = `hsla(${dynamicHue - 5}, 100%, 88%, ${this.alpha * 0.28})`;  
-                for (let j = 0; j < 4; j++) {  
-                    const organAng = (j * Math.PI) / 2 + Math.PI / 4;  
-                    const ox = Math.cos(organAng) * (organRad * 0.35);  
-                    const oy = Math.sin(organAng) * (organRad * 0.35) - (this.radius * 0.15 * this.domeRatioY);  
-                    ctx.beginPath();  
-                    ctx.arc(ox, oy, organRad * 0.42, 0, Math.PI * 2);  
-                    ctx.fill();  
-                }  
-  
-                // 방사상 격막 구조선 (Radial Rib Lines) - 은근하고 세밀하게 투영  
-                ctx.strokeStyle = `hsla(${dynamicHue}, 100%, 95%, 0.14)`;  
+                ctx.strokeStyle = `hsla(${dynamicHue}, 100%, 95%, ${this.isSpecial ? 0.02 : 0.08})`;  
                 ctx.lineWidth = 0.45;  
                 const ribSteps = 5;  
                 for (let i = 1; i < ribSteps; i++) {  
@@ -1018,14 +1242,15 @@
                     ctx.quadraticCurveTo(radX * 0.28, radY * 0.28, radX, radY);  
                     ctx.stroke();  
                 }  
-  
                 ctx.restore();  
+  
+                ctx.restore();  // [Outer Restore]  
             }  
         }  
   
-        // 극도로 정교해진 유기적 광선식 반딧불이 클래스  
+        // 유기적 광선식 반딧불이 클래스  
         class DetailedFirefly {  
-            constructor() {  
+            constructor(isSpecial = false) {  
                 const w = window.innerWidth;  
                 const h = window.innerHeight;  
                   
@@ -1034,33 +1259,32 @@
   
                 this.x = spawnMarginX + Math.random() * (w - spawnMarginX * 2);  
                 this.y = spawnMarginY + Math.random() * (h - spawnMarginY * 2);  
-
-                // 만약 첫 스폰 위치가 타이머 패널 안쪽이라면 위치 우회
-                if (this.x > panelAvoidArea.left && this.x < panelAvoidArea.right &&
-                    this.y > panelAvoidArea.top && this.y < panelAvoidArea.bottom) {
-                    this.x = Math.random() < 0.5 ? panelAvoidArea.left - 40 : panelAvoidArea.right + 40;
-                }
                   
                 this.vx = (Math.random() - 0.5) * 0.25;  
                 this.vy = (Math.random() - 0.5) * 0.25;  
                   
-                // 개체 특징 1: 성격 부여  
+                this.isSpecial = isSpecial; // 특별 반딧불이 여부  
                 this.personality = Math.random() < 0.55 ? 'calm' : 'wandering';  
                   
-                // 개체 특징 2: 크기 분화  
-                this.radius = 0.8 + Math.random() * 0.9;  
+                this.radius = this.isSpecial   
+                    ? 1.9 + Math.random() * 0.8  // 특별 개체는 더 큼  
+                    : 0.8 + Math.random() * 0.9;  
                   
                 this.angle = Math.random() * Math.PI * 2;  
+                this.targetAngle = this.angle;  
+                this.targetChangeTimer = 0;  
                   
-                // 개체 특징 3: 고유 명멸 주기  
                 this.blinkTimer = Math.random() * Math.PI * 2;  
-                this.blinkSpeed = 0.012 + Math.random() * 0.018;   
+                this.blinkSpeed = this.isSpecial  
+                    ? 0.024 + Math.random() * 0.018   
+                    : 0.012 + Math.random() * 0.018;   
                   
-                this.maxGlowMultiplier = 10.0 + Math.random() * 8.0;   
-                this.maxAlpha = 0.6 + Math.random() * 0.25;  
+                // [신규 튜닝 적용] 특별 개체(오로라 프리즘) 발광 감쇄 조정 및 크기 수축 보정
+                this.maxGlowMultiplier = this.isSpecial ? 16.0 + Math.random() * 8.0 : 10.0 + Math.random() * 8.0;   
+                this.maxAlpha = this.isSpecial ? 0.75 + Math.random() * 0.1 : 0.6 + Math.random() * 0.25;  
                   
-                // 개체 특징 5: 따뜻한 숲 황금빛 파장  
-                this.baseHue = 50 + Math.random() * 26;   
+                // 오로라 반딧불이는 무지개 프리즘 아우라 지속 전환  
+                this.baseHue = this.isSpecial ? 0 : 50 + Math.random() * 26;   
                   
                 this.alpha = 0;   
                 this.fadeRate = 0.015;  
@@ -1071,16 +1295,44 @@
                 const h = window.innerHeight;  
                   
                 this.blinkTimer += this.blinkSpeed;  
+  
+                if (this.isSpecial) {  
+                    // 무지개 프리즘 색상 회전  
+                    this.baseHue = (this.baseHue + 0.8) % 360;  
+                }  
                   
-                if (this.personality === 'wandering') {  
-                    this.angle += (Math.random() - 0.5) * 0.15;  
-                    const speed = 0.18 + Math.sin(this.blinkTimer) * 0.05;  
+                // 부드러운 목적지 벡터로 점진적 추종 활공 비행 구현  
+                if (this.isSpecial) {  
+                    this.targetChangeTimer--;  
+                    if (this.targetChangeTimer <= 0) {  
+                        // 일직선 왕복을 막기 위해 가급적 수평 대각선 중심의 넓은 각도로 목적지를 재조정  
+                        const range = Math.random() < 0.5 ? [ -Math.PI/4, Math.PI/4 ] : [ Math.PI - Math.PI/4, Math.PI + Math.PI/4 ];  
+                        this.targetAngle = range[0] + Math.random() * (range[1] - range[0]);  
+                        this.targetChangeTimer = 180 + Math.floor(Math.random() * 240); // 3~7초 단위 방향 전환  
+                    }  
+  
+                    // 각도 변환 가속율을 극도로 부드럽고 차분하게 설계  
+                    const angleDiff = this.targetAngle - this.angle;  
+                    const shortestDiff = Math.atan2(Math.sin(angleDiff), Math.cos(angleDiff));  
+                    this.angle += shortestDiff * 0.01;  
+  
+                    const dashRatio = (Math.sin(this.blinkTimer * 0.8) + 1.0) / 2.0;  
+                    const speed = 0.60 + dashRatio * 0.65; // 속도를 살짝 다운그레이드하여 차분한 유영 선사  
+                    
                     this.vx = Math.cos(this.angle) * speed;  
                     this.vy = Math.sin(this.angle) * speed;  
                 } else {  
-                    this.angle += (Math.random() - 0.5) * 0.05;  
-                    this.vx = Math.cos(this.angle) * 0.05;  
-                    this.vy = Math.sin(this.angle) * 0.05 - 0.012;   
+                    // 일반 반딧불이 비행  
+                    if (this.personality === 'wandering') {  
+                        this.angle += (Math.random() - 0.5) * 0.15;  
+                        const speed = 0.18 + Math.sin(this.blinkTimer) * 0.05;  
+                        this.vx = Math.cos(this.angle) * speed;  
+                        this.vy = Math.sin(this.angle) * speed;  
+                    } else {  
+                        this.angle += (Math.random() - 0.5) * 0.05;  
+                        this.vx = Math.cos(this.angle) * 0.05;  
+                        this.vy = Math.sin(this.angle) * 0.05 - 0.012;   
+                    }  
                 }  
   
                 // 마우스/터치 휘젓기 반응 연산  
@@ -1096,22 +1348,38 @@
                         this.vy += (dy / dist) * force;  
                     }  
                 }  
-
-                // [중요 패치] 타이머 패널 내부 회피 알고리즘 (안으로 들어가지 못하게 외곽으로 밀기)
-                if (this.x > panelAvoidArea.left && this.x < panelAvoidArea.right &&
-                    this.y > panelAvoidArea.top && this.y < panelAvoidArea.bottom) {
-                    
-                    const panelCenterX = (panelAvoidArea.left + panelAvoidArea.right) / 2;
-                    const panelCenterY = (panelAvoidArea.top + panelAvoidArea.bottom) / 2;
-                    const pushAngle = Math.atan2(this.y - panelCenterY, this.x - panelCenterX);
-                    
-                    const repelForce = 0.4;
-                    this.vx += Math.cos(pushAngle) * repelForce;
-                    this.vy += Math.sin(pushAngle) * repelForce;
-                }
+  
+                // [스무스 바운스] 벽이나 천장 근처에 도달할 때 강한 튕김 대신, 회전 조향 각도를 부드럽게 유도  
+                const topThreshold = h * 0.15;  
+                if (this.y < topThreshold) {  
+                    this.targetAngle = Math.PI / 4 + Math.random() * (Math.PI / 2);  
+                    this.vy += 0.04;   
+                }  
+  
+                const bottomThreshold = h * 0.85;  
+                if (this.y > bottomThreshold) {  
+                    const depthFactor = (this.y - bottomThreshold) / (h * 0.15);  
+                    this.targetAngle = -Math.PI / 4 - Math.random() * (Math.PI / 2);  
+                    this.vy -= 0.04;   
+                }  
   
                 this.x += this.vx;  
                 this.y += this.vy;  
+  
+                // 특별 반딧불이 이펙트 발생 궤적  
+                if (this.isSpecial && Math.random() < 0.42) {  
+                    screenParticles.push({  
+                        x: this.x - this.vx * 1.2,  
+                        y: this.y - this.vy * 1.2,  
+                        vx: (Math.random() - 0.5) * 0.25,  
+                        vy: (Math.random() - 0.5) * 0.15 + 0.03,  
+                        radius: 0.8 + Math.random() * 1.4,  
+                        hue: this.baseHue,  
+                        alpha: 0.8,  
+                        decay: 0.010,  
+                        type: 'softTrail'  
+                    });  
+                }  
   
                 // 개체 분산  
                 fireflies.forEach((other, oIdx) => {  
@@ -1136,10 +1404,10 @@
                 const limitTop = edgeMarginY;  
                 const limitBottom = h - edgeMarginY;  
   
-                if (this.x < limitLeft) { this.x = limitLeft; this.angle = 0; }  
-                if (this.x > limitRight) { this.x = limitRight; this.angle = Math.PI; }  
-                if (this.y < limitTop) { this.y = limitTop; this.angle = Math.PI / 2; }  
-                if (this.y > limitBottom) { this.y = limitBottom; this.angle = -Math.PI / 2; }  
+                if (this.x < limitLeft) { this.x = limitLeft; this.targetAngle = (Math.random() - 0.5) * Math.PI * 0.5; this.angle = this.targetAngle; }  
+                if (this.x > limitRight) { this.x = limitRight; this.targetAngle = Math.PI + (Math.random() - 0.5) * Math.PI * 0.5; this.angle = this.targetAngle; }  
+                if (this.y < limitTop) { this.y = limitTop; this.targetAngle = Math.PI / 4 + Math.random() * (Math.PI / 2); this.angle = this.targetAngle; }  
+                if (this.y > limitBottom) { this.y = limitBottom; this.targetAngle = -Math.PI / 4 - Math.random() * (Math.PI / 2); this.angle = this.targetAngle; }  
   
                 if (this.alpha < this.maxAlpha) {  
                     this.alpha += this.fadeRate;  
@@ -1156,7 +1424,8 @@
                       
                     ctx.globalCompositeOperation = 'screen';  
   
-                    const glowRadius = this.radius * (6.0 + pulse * this.maxGlowMultiplier);  
+                    // [신규 튜닝 반영] 특별 반딧불이(오로라 프리즘) 발광 반경 계수 축소 (6.0 + pulse * maxGlowMultiplier -> 4.5 + pulse * maxGlowMultiplier)
+                    const glowRadius = this.radius * ((this.isSpecial ? 4.5 : 6.0) + pulse * this.maxGlowMultiplier);  
                       
                     const flyAngle = Math.atan2(this.vy, this.vx);  
                     const glowOffsetX = -Math.cos(flyAngle) * (this.radius * 0.8);  
@@ -1167,16 +1436,25 @@
                         this.x + glowOffsetX, this.y + glowOffsetY, glowRadius  
                     );  
                       
-                    grad.addColorStop(0, `hsla(${this.baseHue}, 100%, 97%, ${currentAlpha * 0.95})`);  
-                    grad.addColorStop(0.15, `hsla(${this.baseHue + 4}, 100%, 75%, ${currentAlpha * 0.7})`);  
-                    grad.addColorStop(0.45, `hsla(${this.baseHue - 6}, 100%, 55%, ${currentAlpha * 0.25})`);  
-                    grad.addColorStop(1, `hsla(${this.baseHue - 15}, 100%, 45%, 0)`);  
+                    if (this.isSpecial) {  
+                        // 찬란한 프리즘 그라데이션  
+                        grad.addColorStop(0, `hsla(${this.baseHue}, 100%, 97%, ${currentAlpha * 0.95})`);  
+                        grad.addColorStop(0.2, `hsla(${(this.baseHue + 40) % 360}, 100%, 78%, ${currentAlpha * 0.85})`);  
+                        grad.addColorStop(0.5, `hsla(${(this.baseHue + 120) % 360}, 100%, 60%, ${currentAlpha * 0.35})`);  
+                        grad.addColorStop(1, `hsla(${this.baseHue}, 100%, 45%, 0)`);  
+                    } else {  
+                        grad.addColorStop(0, `hsla(${this.baseHue}, 100%, 97%, ${currentAlpha * 0.95})`);  
+                        grad.addColorStop(0.15, `hsla(${this.baseHue + 4}, 100%, 75%, ${currentAlpha * 0.7})`);  
+                        grad.addColorStop(0.45, `hsla(${this.baseHue - 6}, 100%, 55%, ${currentAlpha * 0.25})`);  
+                        grad.addColorStop(1, `hsla(${this.baseHue - 15}, 100%, 45%, 0)`);  
+                    }  
                       
                     ctx.beginPath();  
                     ctx.arc(this.x + glowOffsetX, this.y + glowOffsetY, glowRadius, 0, Math.PI * 2);  
                     ctx.fillStyle = grad;  
                     ctx.fill();  
   
+                    // 특별 오로라 반딧불이도 일반 반딧불이처럼 우아한 실물 몸체를 그리도록 롤백  
                     ctx.globalCompositeOperation = 'source-over';  
                     ctx.translate(this.x, this.y);  
                     ctx.rotate(flyAngle);  
@@ -1184,13 +1462,13 @@
                     // 앞가슴 (Thorax)  
                     ctx.beginPath();  
                     ctx.arc(this.radius * 0.4, 0, this.radius * 0.35, 0, Math.PI * 2);  
-                    ctx.fillStyle = 'rgba(130, 25, 15, 0.7)';   
+                    ctx.fillStyle = this.isSpecial ? 'rgba(255, 120, 0, 0.8)' : 'rgba(130, 25, 15, 0.7)';   
                     ctx.fill();  
   
                     // 등 날개갑 (Elytra)  
                     ctx.beginPath();  
                     ctx.ellipse(-this.radius * 0.25, 0, this.radius * 0.85, this.radius * 0.42, 0, 0, Math.PI * 2);  
-                    ctx.fillStyle = 'rgba(20, 20, 18, 0.85)';   
+                    ctx.fillStyle = this.isSpecial ? 'rgba(40, 20, 50, 0.9)' : 'rgba(20, 20, 18, 0.85)';   
                     ctx.fill();  
   
                     ctx.restore();  
@@ -1199,11 +1477,61 @@
         }  
   
         function spawnJellyfish() {  
-            jellyfishes.push(new RealisticJellyfish());  
+            jellyfishes.push(new RealisticJellyfish(false));  
+            checkAndEforceJellyfish();  
         }  
   
         function spawnFirefly() {  
-            fireflies.push(new DetailedFirefly());  
+            fireflies.push(new DetailedFirefly(false));  
+            checkAndEforceFirefly();  
+        }  
+  
+        // 해파리 30마리 검사 및 에인션트 진화  
+        function checkAndEforceJellyfish() {  
+            const normalJellyfish = jellyfishes.filter(j => !j.isSpecial);  
+            if (normalJellyfish.length >= 30) {  
+                const w = window.innerWidth;  
+                const h = window.innerHeight;  
+                  
+                normalJellyfish.forEach(j => {  
+                    triggerAscensionVisual(j.x, j.y, colorPresets[activeColorKey].hue);  
+                });  
+  
+                jellyfishes = jellyfishes.filter(j => j.isSpecial);  
+  
+                const specialOne = new RealisticJellyfish(true);  
+                specialOne.x = w / 2;  
+                specialOne.y = h / 2;  
+                jellyfishes.push(specialOne);  
+  
+                triggerAscensionVisual(w / 2, h / 2, 20); // 오렌지/코랄 빛 대폭발  
+  
+                showToast('Ancient Coral Unlocked', '30마리의 해파리가 공명하여 위성 광자와 보색 코어를 품은 고대 해파리가 탄생했습니다!', '👑');  
+            }  
+        }  
+  
+        // 반딧불이 30마리 검사 및 오로라 진화  
+        function checkAndEforceFirefly() {  
+            const normalFireflies = fireflies.filter(f => !f.isSpecial);  
+            if (normalFireflies.length >= 30) {  
+                const w = window.innerWidth;  
+                const h = window.innerHeight;  
+  
+                normalFireflies.forEach(f => {  
+                    triggerAscensionVisual(f.x, f.y, f.baseHue);  
+                });  
+  
+                fireflies = fireflies.filter(f => f.isSpecial);  
+  
+                const specialOne = new DetailedFirefly(true);  
+                specialOne.x = w / 2;  
+                specialOne.y = h / 2;  
+                fireflies.push(specialOne);  
+  
+                triggerAscensionVisual(w / 2, h / 2, 200); // 몽환적인 프리즘 보라/시안 폭발  
+  
+                showToast('Aurora Prism Unlocked', '30마리의 반딧불이가 하나로 어우러져 오로라 반딧불이가 탄생했습니다!', '🌈');  
+            }  
         }  
   
         // 잔잔한 부유 기포 깔아두기  
@@ -1239,7 +1567,82 @@
                 });  
             }  
   
-            // 휘젓기 감쇠 효과 (속도가 서서히 0에 수렴하게 함)  
+            // 합성 승천 파티클 및 해파리 충격파 링 렌더링 루프  
+            ctx.save();  
+            for (let i = screenParticles.length - 1; i >= 0; i--) {  
+                const p = screenParticles[i];  
+                
+                if (p.type === 'shockwave') {  
+                    // 고대종 해파리의 충격파 그리기 (매우 굵고 부드러운 안개 링 효과)  
+                    p.radius += 2.0;  
+                    p.alpha -= p.decay;  
+  
+                    if (p.alpha <= 0) {  
+                        screenParticles.splice(i, 1);  
+                        continue;  
+                    }  
+  
+                    ctx.save();  
+                    ctx.globalCompositeOperation = 'screen';  
+                    ctx.beginPath();  
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);  
+                    // 얇은 선이 아닌 흐릿한 발광체 고리로 그리기 위해 그림자 효과와 투명도 조절  
+                    ctx.strokeStyle = `hsla(${p.hue}, 100%, 75%, ${p.alpha * 0.10})`;  
+                    ctx.lineWidth = 4.0;  
+                    ctx.shadowBlur = 12;  
+                    ctx.shadowColor = `hsla(${p.hue}, 100%, 65%, ${p.alpha * 0.20})`;  
+                    ctx.stroke();  
+                    ctx.restore();  
+                } else if (p.type === 'softTrail') {  
+                    // 특별 반딧불이 전용 뭉글뭉글한 빛 안개 궤적 잔상  
+                    p.x += p.vx;  
+                    p.y += p.vy;  
+                    p.alpha -= p.decay;  
+  
+                    if (p.alpha <= 0) {  
+                        screenParticles.splice(i, 1);  
+                        continue;  
+                    }  
+  
+                    ctx.save();  
+                    ctx.globalCompositeOperation = 'screen';  
+                    // 원형이 아닌, 외각이 극도로 뭉개진 안개 광채로만 렌더링  
+                    const trailGlow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius * 6);  
+                    trailGlow.addColorStop(0, `hsla(${p.hue}, 100%, 80%, ${p.alpha * 0.35})`);  
+                    trailGlow.addColorStop(0.5, `hsla(${(p.hue + 30) % 360}, 100%, 60%, ${p.alpha * 0.12})`);  
+                    trailGlow.addColorStop(1, 'rgba(0,0,0,0)');  
+  
+                    ctx.beginPath();  
+                    ctx.arc(p.x, p.y, p.radius * 6, 0, Math.PI * 2);  
+                    ctx.fillStyle = trailGlow;  
+                    ctx.fill();  
+                    ctx.restore();  
+                } else {  
+                    // 승천 파티클  
+                    p.x += p.vx;  
+                    p.y += p.vy;  
+                    p.vy += 0.015;   
+                    p.alpha -= p.decay;  
+  
+                    if (p.alpha <= 0) {  
+                        screenParticles.splice(i, 1);  
+                        continue;  
+                    }  
+  
+                    ctx.save();  
+                    ctx.globalCompositeOperation = 'screen';  
+                    ctx.beginPath();  
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);  
+                    ctx.fillStyle = `hsla(${p.hue}, 100%, 75%, ${p.alpha})`;  
+                    ctx.shadowBlur = 8;  
+                    ctx.shadowColor = `hsla(${p.hue}, 100%, 65%, ${p.alpha * 0.5})`;  
+                    ctx.fill();  
+                    ctx.restore();  
+                }  
+            }  
+            ctx.restore();  
+  
+            // 휘젓기 감쇠 효과  
             if (isSwaying) {  
                 swayPower *= 0.95;  
                 if (swayPower < 0.1) {  
